@@ -5,7 +5,7 @@
         <!-- 侧边栏组件 -->
         <v-sidebar></v-sidebar>
         <!-- 主体部分 -->
-        <div class="content-box" :class="{ 'content-collapse': collapse }">
+        <div class="content-box" :class="{ 'content-collapse': collapse }" :style="'width:' + w + 'px'">
             <!-- 页签组件 -->
             <v-tags></v-tags>
             <!-- 内容部分 -->
@@ -35,7 +35,8 @@ export default {
         return {
             tagsList: [],
             collapse: false,
-            userList: []
+            userList: [],
+            w: 1360
         };
     },
     components: {
@@ -46,7 +47,13 @@ export default {
     },
     created() {
         bus.$on('collapse-content', msg => {
+            console.log('msg:', msg);
             this.collapse = msg;
+            if (!msg) {
+                this.w = 1360;
+            } else {
+                this.w = 1476;
+            }
         });
 
         // 只有在标签页列表里的页面才使用keep-alive，即关闭标签之后就不保存到内存中了。

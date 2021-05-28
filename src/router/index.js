@@ -12,6 +12,8 @@ const Image_AugTaskAdd = () => import(/* webpackChunkName: "donate" */ '../compo
 const Image_AugTaskList = () => import(/* webpackChunkName: "donate" */ '../components/page/Image_AugTaskList.vue')
 const Image_Input_Data = () => import(/* webpackChunkName: "donate" */ '../components/page/Image_Input_Data.vue')
 
+const Agricultural_AugTaskAdd = () => import(/* webpackChunkName: "donate" */ '../components/page/Agricultural_AugTaskAdd.vue')
+
 const AugmentationManage = () => import(/* webpackChunkName: "donate" */ '../components/page/AugmentationManage.vue')
 const Log = () => import(/* webpackChunkName: "donate" */ '../components/page/Log.vue')
 const SelfInfo = () => import(/* webpackChunkName: "donate" */ '../components/page/SelfInfo.vue')
@@ -88,19 +90,27 @@ export default new Router({
                     path: '/Image_Augmentation_Add',
                     component: Image_AugTaskAdd,
                     name:Image_AugTaskAdd,
-                    meta: { title: '电磁波-添加' }
+                    meta: { title: '图像-添加' }
                 },
                 {
                     path: '/Image_Augmentation_Task',
                     component: Image_AugTaskList,
                     name:Image_AugTaskList,
-                    meta: { title: '电磁波-查询' }
+                    meta: { title: '图像-查询' }
                 },
+
                 {
                     path: '/Image_Input_Data',
                     component: Image_Input_Data,
                     name: Image_Input_Data,
-                    meta: { title: '电磁波-可视化' }
+                    meta: { title: '图像-可视化' }
+                },
+
+                {
+                    path: '/Agricultural_Augmentation_Task',
+                    component: Agricultural_AugTaskAdd,
+                    name:Agricultural_AugTaskAdd,
+                    meta: { title: '农业图像-扩增' }
                 },
 
                 {

@@ -26,7 +26,7 @@
                     </el-table>
                 </el-tab-pane>
                 <el-tab-pane label="近15天系统日志数据" name="second">
-                    <el-table :data="logShow_new_two" style="width: 100%" stripe>
+                    <el-table :data="logShow_new_two" style="width: 99%" stripe>
                         <el-table-column type="index"></el-table-column>
                         <el-table-column type="expand" style="background:rgba(150, 154, 184,0.05);">
                             <template slot-scope="scope">
@@ -44,7 +44,7 @@
                     <!-- <el-button @click="fileDownload">下 载</el-button> -->
                 </el-tab-pane>
                 <el-tab-pane label="近6个月系统日志数据" name="third">
-                    <el-table :data="logShow_new_three" style="width: 100%" stripe>
+                    <el-table :data="logShow_new_three" style="width: 99%" stripe>
                         <el-table-column type="index"></el-table-column>
                         <el-table-column type="expand" style="background:rgba(150, 154, 184,0.05);">
                             <template slot-scope="scope">
@@ -168,10 +168,46 @@ export default {
             console.log(logShow);
             if (num === 1) {
                 this.logShow_new_one = logShow;
+                console.log('this.logShow_new_one:', this.logShow_new_one);
+                for (var i in this.logShow_new_one) {
+                    for (var j in this.logShow_new_one[i].children) {
+                        if (this.logShow_new_one[i].children[j].label4 === 'FGSM') {
+                            this.logShow_new_one[i].children[j].label4 = '添加扩增点云生成';
+                        } else if (this.logShow_new_one[i].children[j].label4 === 'JSMA') {
+                            this.logShow_new_one[i].children[j].label4 = '点云物体旋转生成';
+                        } else if (this.logShow_new_one[i].children[j].label4 === 'I-FGSM(BIM)') {
+                            this.logShow_new_one[i].children[j].label4 = '极端场景点云生成';
+                        }
+                    }
+                }
             } else if (num === 2) {
                 this.logShow_new_two = logShow;
+                console.log('this.logShow_new_two:', this.logShow_new_two);
+                for (var i in this.logShow_new_two) {
+                    for (var j in this.logShow_new_two[i].children) {
+                        if (this.logShow_new_two[i].children[j].label4 === 'FGSM') {
+                            this.logShow_new_two[i].children[j].label4 = '添加扩增点云生成';
+                        } else if (this.logShow_new_two[i].children[j].label4 === 'JSMA') {
+                            this.logShow_new_two[i].children[j].label4 = '点云物体旋转生成';
+                        } else if (this.logShow_new_two[i].children[j].label4 === 'I-FGSM(BIM)') {
+                            this.logShow_new_two[i].children[j].label4 = '极端场景点云生成';
+                        }
+                    }
+                }
             } else {
                 this.logShow_new_three = logShow;
+                console.log('this.logShow_new_three:', this.logShow_new_three);
+                for (var i in this.logShow_new_three) {
+                    for (var j in this.logShow_new_three[i].children) {
+                        if (this.logShow_new_three[i].children[j].label4 === 'FGSM') {
+                            this.logShow_new_three[i].children[j].label4 = '添加扩增点云生成';
+                        } else if (this.logShow_new_three[i].children[j].label4 === 'JSMA') {
+                            this.logShow_new_three[i].children[j].label4 = '点云物体旋转生成';
+                        } else if (this.logShow_new_three[i].children[j].label4 === 'I-FGSM(BIM)') {
+                            this.logShow_new_three[i].children[j].label4 = '极端场景点云生成';
+                        }
+                    }
+                }
             }
         }
     },

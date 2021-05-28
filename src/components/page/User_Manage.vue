@@ -11,18 +11,44 @@
         <!-- 卡片视图区域 -->
         <el-card>
             <!-- 搜索与添加区域 -->
-            <el-row :gutter="20" class="search">
+            <!-- <el-row :gutter="20" class="search">
                 <el-col :span="8">
                     <el-input placeholder="请输入用户名" v-model="searchUserName" clearable @clear="getUserList">
                         <el-button slot="append" @click="FuzzySearvhchUser" size="mini"
                             ><i class="el-icon-search el-icon--right"></i
                         ></el-button>
-
-                        <!-- <el-button slot="append" @click="PreciseSearchUser" type="primary"
-                            >精确<i class="el-icon-search el-icon--right"></i
-                        ></el-button> -->
-                        <!-- <el-button slot="append" icon="el-icon-search" @click="getUserList">精确</el-button> -->
                     </el-input>
+                </el-col>
+                <el-col :span="4">
+                    <el-button type="primary" @click="addDialogVisible = true">添加用户</el-button>
+                </el-col>
+            </el-row> -->
+            <!-- 搜索与添加区域 -->
+            <el-row :gutter="20" class="search">
+                <el-col :span="12">
+                    <!-- :model="formInline_Self" -->
+                    <el-form :inline="true" :model="formInline_Self" class="demo-form-inline">
+                        <el-form-item label="查询方式">
+                            <el-select v-model="formInline_Self.searchType" placeholder="请选择查询方式" prop="searchType">
+                                <el-option label="用户id" value="用户id"></el-option>
+                                <el-option label="用户名" value="用户名"></el-option>
+                                <el-option label="用户昵称" value="用户昵称"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="查询内容">
+                            <el-input placeholder="请输入内容" v-model="formInline_Self.searchTaskInfo" clearable @clear="getUserList">
+                                <el-button
+                                    slot="append"
+                                    @click="
+                                        pageReflash();
+                                        SearchUser();
+                                    "
+                                    size="mini"
+                                    ><i class="el-icon-search el-icon--right"></i
+                                ></el-button>
+                            </el-input>
+                        </el-form-item>
+                    </el-form>
                 </el-col>
                 <el-col :span="4">
                     <el-button type="primary" @click="addDialogVisible = true">添加用户</el-button>
@@ -206,7 +232,11 @@ export default {
             visibleSubmit: '',
             userRight: '',
             colomnHiden: true,
-            value: '100'
+            value: '100',
+            formInline_Self: {
+                searchType: '',
+                searchTaskInfo: ''
+            }
         };
     },
     created() {
@@ -219,6 +249,47 @@ export default {
         // console.log(this.visibleSubmit);
     },
     methods: {
+        pageReflash() {
+            this.queryInfo.page = 1;
+        },
+        // 查找函数[本用户]
+        async SearchUser() {
+            console.log('开始查询');
+            if (this.formInline_Self.searchType === '') {
+                return this.$message.error('请输入查询方式！');
+            }
+            if (this.formInline_Self.searchTaskInfo === '') {
+                return this.$message.error('请输入搜索内容！');
+            }
+            var search_params = '';
+            if (this.formInline_Self.searchType === '用户id') {
+                search_params = '/user/id/admin/search/?user_id=' + this.formInline_Self.searchTaskInfo;
+            } else if (this.formInline_Self.searchType === '用户名') {
+                search_params = '/user/username/admin/search/?username=' + this.formInline_Self.searchTaskInfo + '&search_type=1';
+            } else if (this.formInline_Self.searchType === '用户昵称') {
+                search_params = '/user/nickname/admin/search/?nickname=' + this.formInline_Self.searchTaskInfo + '&search_type=1';
+            }
+            // console.log('search_params:' + search_params);
+            console.log('search_params:', search_params);
+            const { data: data } = await this.$http.get(search_params);
+            if (data.code !== 20000) {
+                // console.log(data.code);
+                return this.$message.error('未搜索到该用户！');
+            }
+            console.log('data:', data);
+            //   数据获取成功，保存数据到this中
+            if (this.formInline_Self.searchType === '用户id') {
+                this.userList = [];
+                this.userList.push(data.data);
+            } else {
+                this.userList = data.data.details;
+            }
+            this.total_Self = this.userList ? this.userList.length : 0;
+            this.totalPageNum = data.data.pages;
+        },
+        temp() {
+            console.log('wdnmd');
+        },
         // 更新/获取数据的方法
         async getUserList() {
             console.log('this.$store.getters.tokenInfo:' + this.$store.getters.tokenInfo);
@@ -232,7 +303,7 @@ export default {
             //   数据获取成功，保存数据到this中
             this.userList = data.data.details;
             this.total = data.data.pages * 10;
-            // console.log('data.data.details:');
+            console.log('data.data.details:', data.data.details);
             // console.log(data.data.details);
             // console.log('this.userList:');
             // console.log(this.userList);
@@ -395,6 +466,9 @@ export default {
             }
             return value;
         }
+    },
+    mounted() {
+        this.$store.commit('setUserId', sessionStorage.getItem('userId'));
     }
 };
 </script>

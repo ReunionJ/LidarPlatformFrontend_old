@@ -11,6 +11,7 @@ const store = new Vuex.Store({
         userId: 0,
         token: sessionStorage.getItem('token'),
         nickname: sessionStorage.getItem('nickname'),
+        username: sessionStorage.getItem('username'),
         user_group_name: sessionStorage.getItem('user_group_name'),
     },
     // 一次性更新store和sessionStorage
@@ -31,6 +32,11 @@ const store = new Vuex.Store({
             sessionStorage.setItem('user_group_name', value),
                 console.log("用户权限已更新");
             state.user_group_name = value;
+        },
+        setUsername(state, value) {
+            sessionStorage.setItem('username', value),
+                console.log("用户名已更新");
+            state.username = value;
         }
     },
     getters: {
@@ -45,6 +51,9 @@ const store = new Vuex.Store({
         },
         getUser_group_name(state) {
             return state.user_group_name;
+        },
+        getUsername(state) {
+            return state.username;
         },
     }
 })

@@ -474,7 +474,7 @@
 <script>
 import qs from 'qs';
 import fileDownload from 'js-file-download';
-import Lidar_AugTaskList from './Lidar_AugTaskList.vue';
+import Lidar_AugTaskList from './Lidar_AugTaskList_me.vue';
 export default {
     name: 'Radar_AugTaskList',
     extends: Lidar_AugTaskList,
@@ -887,6 +887,9 @@ export default {
             console.log('this.methodDetail:');
             console.log(this.methodDetail);
         }
+    },
+    mounted() {
+        this.$store.commit('setUserId', sessionStorage.getItem('userId'));
     }
 };
 </script>

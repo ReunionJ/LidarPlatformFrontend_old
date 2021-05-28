@@ -7,47 +7,43 @@
             </el-breadcrumb>
         </div>
         <div class="container">
-            <div class="form-box">
-                <el-form ref="formRef" :model="form" :rules="FormRules" label-width="80px">
-                    <el-form-item label="任务类型">
-                        <!-- 一级下拉列表 -->
-                        <el-select
-                            v-model="form.augmentation_type"
-                            placeholder="请选择生成类型"
-                            @change="typeChanged"
-                            class="marginRight"
-                            prop="augmentation_type"
-                        >
-                            <el-option v-for="item in this.typeList" :key="item.id" :label="item.name" :value="item.name"> </el-option>
-                        </el-select>
+            <div>
+                <el-row :gutter="20">
+                    <el-col :span="24">
+                        <el-col :span="14">
+                            <el-form ref="formRef" :model="form" :rules="FormRules" label-width="80px">
+                                <el-form-item label="任务名称" prop="name">
+                                    <el-input v-model="form.name"></el-input>
+                                </el-form-item>
 
-                        <!-- 二级下拉列表 -->
-                        <el-select v-model="form.augmentation_method" placeholder="请选择生成方法" prop="augmentation_method">
-                            <el-option v-for="item in this.methods" :key="item.id" :label="item.name" :value="item.id"> </el-option>
-                        </el-select>
-                    </el-form-item>
+                                <el-form-item label="参数设定" prop="params">
+                                    <el-input type="text" v-model="form.params"></el-input>
+                                </el-form-item>
 
-                    <el-form-item label="任务名称" prop="name">
-                        <el-input v-model="form.name"></el-input>
-                    </el-form-item>
+                                <el-form-item label="上传文件">
+                                    <input ref="pathClear" type="file" id="filetemp" prop="form.file" /><br />
+                                </el-form-item>
 
-                    <el-form-item label="参数设定" prop="params">
-                        <el-input type="textarea" rows="5" v-model="form.params"></el-input>
-                    </el-form-item>
-
-                    <el-form-item label="上传文件"> <input type="file" id="filetemp" prop="form.file" /><br /> </el-form-item>
-
-                    <el-form-item>
-                        <el-button type="primary" @click="onSubmit">表单提交</el-button>
-                        <el-button>取消</el-button>
-                    </el-form-item>
-                </el-form>
+                                <el-form-item>
+                                    <el-button type="primary" @click="onSubmit">表单提交</el-button>
+                                    <el-button>取消</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </el-col>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20">
+                    <el-col :span="24">
+                        <div id="radar_augment" style="width: 95%; height:400px; margin: 0 auto;"></div>
+                    </el-col>
+                </el-row>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import * as echarts from 'echarts';
 import qs from 'qs';
 export default {
     name: 'baseform',
@@ -61,7 +57,7 @@ export default {
         return {
             form: {
                 name: '',
-                augmentation_method: '',
+                augmentation_method: 1,
                 params: '',
                 master: this.$store.state.userId,
                 // master: window.sessionStorage.getItem('userId'),
@@ -69,15 +65,19 @@ export default {
                 file: {}
             },
             FormRules: {
-                // 验证用户名是否合法
-                name: [{ required: true, message: '任务名不可为空', trigger: 'blur' }],
-                // 验证密码是否合法
-                augmentation_method: [{ required: true, message: '生成方法不可为空', trigger: 'blur' }]
+                // // 验证用户名是否合法
+                // name: [{ required: true, message: '任务名不可为空', trigger: 'blur' }],
+                // // 验证密码是否合法
+                // augmentation_method: [{ required: true, message: '生成方法不可为空', trigger: 'blur' }]
             },
             // loadingMethod: false,
             methods: [],
             fileList: [],
-            typeList: []
+            typeList: [],
+            option: null,
+            x: [],
+            y: []
+            // preview_flag: false
         };
     },
     methods: {
@@ -87,22 +87,22 @@ export default {
                 console.log(this.FormRules);
                 console.log('正在预验证');
                 if (valid) {
-                    if (this.form.augmentation_method === '') {
-                        return this.$message.error('请选择生成方法!');
-                    }
-                    if (this.form.name === '') {
-                        return this.$message.error('生成任务名不能为空!');
-                    }
+                    // if (this.form.augmentation_method === '') {
+                    //     return this.$message.error('请选择生成方法!');
+                    // }
+                    // if (this.form.name === '') {
+                    //     return this.$message.error('生成任务名不能为空!');
+                    // }
                     console.log('通过预验证');
                     console.log('this.form:');
                     console.log(this.form);
                     var adddata = new FormData();
-                    adddata.append('name', this.form.name);
-                    adddata.append('augmentation_method', this.form.augmentation_method);
-                    adddata.append('master', this.form.master);
-                    if (this.form.params) {
-                        adddata.append('params', this.form.params);
-                    }
+                    // adddata.append('name', this.form.name);
+                    // adddata.append('augmentation_method', this.form.augmentation_method);
+                    // adddata.append('master', this.form.master);
+                    // if (this.form.params) {
+                    //     adddata.append('params', this.form.params);
+                    // }
                     this.form.file = document.getElementById('filetemp').files[0];
                     console.log(this.form.file);
                     if (this.form.file) {
@@ -112,30 +112,79 @@ export default {
                     console.log(adddata);
                     console.log('form:');
                     console.log(this.form);
-
+                    var temp = this.$http.defaults.baseURL;
+                    console.log('this.$http.defaults.baseURL1:', this.$http.defaults.baseURL);
+                    this.$http.defaults.baseURL = 'http://129.211.89.155:8050/';
+                    // 129.211.89.155:8050/uploadimage?augmentation_method=1&master=2&name=3&params=4
+                    console.log('this.$http.defaults.baseURL2:', this.$http.defaults.baseURL);
                     const { data: data } = await this.$http({
-                        url: '/task/',
+                        url:
+                            '/uploadwave?augmentation_method=1&master=' +
+                            this.form.master +
+                            '&name=' +
+                            this.form.name +
+                            '&params=' +
+                            this.form.params,
                         data: adddata,
-                        method: 'post'
+                        method: 'post',
+                        contentType: 'application/x-www-form-urlencoded'
                     });
-                    // const { data: data } = await this.$http.post('/task/', qs.stringify(this.form));
-                    if (data.code !== 20000) {
-                        console.log(data.code);
-                        console.log(data.msg);
-                        return this.$message.error('添加生成任务失败！' + '错误原因：' + data.msg);
-                    }
+
+                    this.$http.defaults.baseURL = temp;
+
                     console.log('adddata:');
                     console.log(adddata);
+                    // console.log('res:', res);
+                    console.log('data:', data);
+                    var format_data = data.split('\n');
+                    console.log('format_data:', format_data);
+                    this.x = [];
+                    this.y = [];
+                    format_data.forEach(item => {
+                        var temp = item.split('   ');
+                        console.log('temp:', temp);
+                        this.x.push(temp[0]);
+                        this.y.push(temp[1]);
+                    });
+                    console.log('this.x:', this.x);
+                    console.log('this.y:', this.y);
                     this.$message.success('提交成功！');
+                    this.get_preview();
                     // 重置表单
+
                     console.log('重置表单');
                     this.$refs.formRef.resetFields();
                     this.form.augmentation_type = '';
                     this.form.augmentation_method = '';
                     this.form.file = {};
+                    this.$refs.pathClear.value = '';
                     // this.$store.commit('storeToken', data.data.token);
                 }
             });
+        },
+        // 开始加载点云预览图像
+        async get_preview() {
+            // this.preview_flag = true;
+            console.log('1');
+            var myChart = echarts.init(document.getElementById('radar_augment'));
+            console.log('2');
+            this.option = {
+                xAxis: {
+                    type: 'category',
+                    data: this.x
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        data: this.y,
+                        type: 'line'
+                    }
+                ]
+            };
+            console.log('3');
+            myChart.setOption(this.option);
         },
         // 改变生成类型时生成方法的二级联动
         async typeChanged(name) {
@@ -204,9 +253,12 @@ export default {
         }
     },
     mounted() {
-        console.log('augTypeList:');
-        console.log(this.$store.getters.augTypeList);
+        this.$store.commit('setUserId', sessionStorage.getItem('userId'));
     },
+    // mounted() {
+    //     console.log('augTypeList:');
+    //     console.log(this.$store.getters.augTypeList);
+    // },
     created() {
         this.getTypeList();
     }

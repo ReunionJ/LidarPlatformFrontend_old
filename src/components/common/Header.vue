@@ -72,9 +72,20 @@ export default {
     },
     methods: {
         // 用户名下拉菜单选择事件[含登出]
-        handleCommand(command) {
+        async handleCommand(command) {
             // 如果是登出命令则跳转至登录页
             if (command == 'logout') {
+                console.log('this.$store.state.username' + this.$store.state.username);
+                // console.log('this.$store.state.nickname:', this.$store.state.nickname);
+                console.log('this.$store.state.token登出:', this.$store.state.token);
+                const { data: data } = await this.$http.delete('/user/logout/?username=' + this.$store.state.username);
+                if (data.code !== 20000) {
+                    console.log(data.code);
+                    console.log(data.msg);
+                    return this.$message.error('用户登出失败！' + '错误原因：' + data.msg);
+                }
+                this.$message.success('用户登出成功！');
+
                 // 在本地数据仓库中删除当前用户
                 // sessionStorage.clear();
                 console.log('sessionStorage已清除');
@@ -92,6 +103,7 @@ export default {
                 // 确认清除
                 console.log(this.$store.state.token);
                 console.log(this.$store.state.nickname);
+                console.log(this.$store.state.username);
                 console.log(this.$store.state.userId);
                 // 路由跳转
                 this.$router.push('/login');
@@ -157,7 +169,7 @@ export default {
     align-items: center;
     box-sizing: border-box;
     /* border-box对元素指定宽度width和高度height包括了 padding 和 border */
-    width: 100%;
+    width: 1540px;
     height: 70px;
     font-size: 22px;
     /* 此处控制的为icon和字体的颜色，而非header的bgc */

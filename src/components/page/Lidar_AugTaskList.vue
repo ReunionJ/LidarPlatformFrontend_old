@@ -60,12 +60,17 @@
                     <!-- 生成列表区域 -->
                     <el-table :data="taskList_Self" border stripe>
                         <!-- 索引列 -->
-                        <el-table-column type="index"></el-table-column>
-                        <el-table-column label="id" prop="id" width="50px"></el-table-column>
+                        <el-table-column type="index" width="35px"></el-table-column>
+                        <el-table-column label="id" prop="id" width="42px"></el-table-column>
                         <el-table-column label="任务名" prop="name"></el-table-column>
-                        <el-table-column label="任务状态" prop="task_status" width="100px"></el-table-column>
+                        <el-table-column label="紧急等级" prop="urgency_level" width="70px">
+                            <template slot-scope="scope">
+                                <el-tag>{{ scope.row.urgency_level }}</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="任务状态" prop="task_status" width="85px"></el-table-column>
 
-                        <el-table-column label="是否上传原型文件" prop="task_have_origin_file" width="130px">
+                        <el-table-column label="是否上传原型文件" prop="task_have_origin_file">
                             <template slot-scope="scope">
                                 <el-tag v-if="scope.row.task_have_origin_file === true" class="right10">
                                     &nbsp;&nbsp;是&nbsp;&nbsp;
@@ -84,14 +89,14 @@
                                         type="success"
                                         icon="el-icon-download"
                                         size="mini"
-                                        @click="originalfileDownload(scope.row.id)"
+                                        @click="originalfileDownload(scope.row.id, 0, scope.row.augmentation_method_name)"
                                         plain
                                     ></el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
 
-                        <el-table-column label="是否生成生成文件" prop="task_have_generate_file" width="130px">
+                        <el-table-column label="是否生成生成文件" prop="task_have_generate_file" width="175px">
                             <template slot-scope="scope">
                                 <el-tag v-if="scope.row.task_have_generate_file === true" class="right10">
                                     &nbsp;&nbsp;是&nbsp;&nbsp;
@@ -110,43 +115,61 @@
                                         type="success"
                                         icon="el-icon-download"
                                         size="mini"
-                                        @click="generatefileDownload(scope.row.id)"
+                                        @click="generatefileDownload(scope.row.id, 0, scope.row.augmentation_method_name)"
+                                        plain
+                                    ></el-button>
+                                </el-tooltip>
+
+                                <el-tooltip
+                                    content="点云对比预览"
+                                    effect="dark"
+                                    placement="top"
+                                    :enterable="false"
+                                    v-if="scope.row.task_have_generate_file === true"
+                                >
+                                    <el-button
+                                        type="warning"
+                                        icon="el-icon-data-analysis"
+                                        size="mini"
+                                        @click="point_cloud_preview(scope.row.id, scope.row.augmentation_method_name)"
                                         plain
                                     ></el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
 
-                        <el-table-column label="任务生成数据数量" prop="generate_data_number" width="120px">
+                        <el-table-column label="任务生成数据数量" prop="generate_data_number" width="75px">
                             <template slot-scope="scope">
                                 {{ isBlank_num(scope) }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="任务数据更新时间" prop="update_datetime">
+                        <el-table-column label="任务数据更新时间" prop="update_datetime" width="90px">
                             <template slot-scope="scope">
                                 {{ scope.row.update_datetime | dateFormat }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="任务开始时间" prop="start_datetime" width="100px">
+                        <el-table-column label="任务开始时间" prop="start_datetime" width="90px">
                             <template slot-scope="scope">
                                 {{ isBlank_start(scope) | dateFormat }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="任务结束时间" prop="fin_datetime" width="100px">
+                        <el-table-column label="任务结束时间" prop="fin_datetime" width="90px">
                             <template slot-scope="scope">
                                 {{ isBlank_end(scope) | dateFormat }}
                             </template>
                         </el-table-column>
                         <!-- 操作无具体的数据源 -->
-                        <el-table-column label="操作" width="120px">
+                        <el-table-column label="操作">
                             <template slot-scope="scope">
                                 <!-- 编辑按钮 -->
+                                <!--  -->
                                 <el-tooltip effect="dark" content="编辑" placement="top" :enterable="false">
                                     <el-button
+                                        v-if="scope.row.task_status === '未开始'"
                                         type="primary"
                                         icon="el-icon-edit"
                                         size="mini"
-                                        @click="showEditDialog(scope.row.id, scope.row.name, scope.row.params)"
+                                        @click="showEditDialog(scope.row)"
                                     ></el-button>
                                 </el-tooltip>
                                 <!-- 删除按钮 -->
@@ -160,7 +183,7 @@
                                 </el-tooltip>
                             </template>
                         </el-table-column>
-                        <el-table-column label="详情" width="65px">
+                        <el-table-column label="详情" width="80px">
                             <template slot-scope="scope">
                                 <!-- 查看方法按钮 -->
                                 <el-tooltip effect="dark" content="方法详情" placement="top" :enterable="false">
@@ -186,6 +209,7 @@
                     >
                     </el-pagination>
                 </el-tab-pane>
+                <!-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> -->
 
                 <el-tab-pane label="所有用户" name="all" v-if="this.userRight === '超级管理员'">
                     <!-- 搜索与添加区域 -->
@@ -241,11 +265,16 @@
                             <span>暂无数据</span>
                         </template> -->
                         <!-- 索引列 -->
-                        <el-table-column type="index"></el-table-column>
-                        <el-table-column label="id" prop="id" width="50px"></el-table-column>
-                        <el-table-column label="任务名" prop="name"></el-table-column>
-                        <el-table-column label="任务状态" prop="task_status"></el-table-column>
-                        <el-table-column label="是否上传原型文件" prop="task_have_origin_file" width="130px">
+                        <!-- <el-table-column type="index" width="35px"></el-table-column> -->
+                        <el-table-column label="id" prop="id" width="42px"></el-table-column>
+                        <el-table-column label="任务名" prop="name" width="120px"></el-table-column>
+                        <el-table-column label="紧急等级" prop="urgency_level" width="70px">
+                            <template slot-scope="scope">
+                                <el-tag>{{ scope.row.urgency_level }}</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="任务状态" prop="task_status" width="85px"></el-table-column>
+                        <el-table-column label="是否上传原型文件" prop="task_have_origin_file" width="120px">
                             <template slot-scope="scope">
                                 <el-tag v-if="scope.row.task_have_origin_file === true" class="right10">
                                     &nbsp;&nbsp;是&nbsp;&nbsp;
@@ -264,13 +293,13 @@
                                         type="success"
                                         icon="el-icon-download"
                                         size="mini"
-                                        @click="originalfileDownload(scope.row.id)"
+                                        @click="originalfileDownload(scope.row.id, 0, scope.row.augmentation_method_name)"
                                         plain
                                     ></el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
-                        <el-table-column label="是否生成生成文件" prop="task_have_generate_file" width="130px">
+                        <el-table-column label="是否生成生成文件" prop="task_have_generate_file" width="175px">
                             <template slot-scope="scope">
                                 <el-tag v-if="scope.row.task_have_generate_file === true" class="right10">
                                     &nbsp;&nbsp;是&nbsp;&nbsp;
@@ -288,28 +317,43 @@
                                         type="success"
                                         icon="el-icon-download"
                                         size="mini"
-                                        @click="generatefileDownload(scope.row.id)"
+                                        @click="generatefileDownload(scope.row.id, 0, scope.row.augmentation_method_name)"
+                                        plain
+                                    ></el-button>
+                                </el-tooltip>
+                                <el-tooltip
+                                    content="点云对比预览"
+                                    effect="dark"
+                                    placement="top"
+                                    :enterable="false"
+                                    v-if="scope.row.task_have_generate_file === true"
+                                >
+                                    <el-button
+                                        type="warning"
+                                        icon="el-icon-data-analysis"
+                                        size="mini"
+                                        @click="point_cloud_preview(scope.row.id, scope.row.augmentation_method_name)"
                                         plain
                                     ></el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
-                        <el-table-column label="任务生成数据数量" prop="generate_data_number">
+                        <el-table-column label="任务生成数据数量" prop="generate_data_number" width="75px">
                             <template slot-scope="scope">
                                 {{ isBlank_num(scope) }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="任务数据更新时间" prop="update_datetime">
+                        <el-table-column label="任务数据更新时间" prop="update_datetime" width="90px">
                             <template slot-scope="scope">
                                 {{ scope.row.update_datetime | dateFormat }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="任务开始时间" prop="start_datetime">
+                        <el-table-column label="任务开始时间" prop="start_datetime" width="90px">
                             <template slot-scope="scope">
                                 {{ isBlank_start(scope) | dateFormat }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="任务结束时间" prop="fin_datetime">
+                        <el-table-column label="任务结束时间" prop="fin_datetime" width="90px">
                             <template slot-scope="scope">
                                 {{ isBlank_end(scope) | dateFormat }}
                             </template>
@@ -319,12 +363,18 @@
                         <el-table-column label="操作" width="120px">
                             <template slot-scope="scope">
                                 <!-- 编辑按钮 -->
-                                <el-tooltip effect="dark" content="编辑" placement="top" :enterable="false">
+                                <el-tooltip
+                                    v-if="scope.row.task_status === '未开始'"
+                                    effect="dark"
+                                    content="编辑"
+                                    placement="top"
+                                    :enterable="false"
+                                >
                                     <el-button
                                         type="primary"
                                         icon="el-icon-edit"
                                         size="mini"
-                                        @click="showEditDialog(scope.row.id, scope.row.name, scope.row.params)"
+                                        @click="showEditDialog(scope.row)"
                                     ></el-button>
                                 </el-tooltip>
                                 <!-- 删除按钮 -->
@@ -338,7 +388,7 @@
                                 </el-tooltip>
                             </template>
                         </el-table-column>
-                        <el-table-column label="详情" width="65px">
+                        <el-table-column label="详情" width="80px">
                             <template slot-scope="scope">
                                 <!-- 查看方法按钮 -->
                                 <el-tooltip effect="dark" content="方法详情" placement="top" :enterable="false">
@@ -370,18 +420,71 @@
         <!-- 修改生成的对话框 -->
         <el-dialog title="编辑任务信息" :visible.sync="editDialogSelfVisible" width="50%" @closed="editDialogClosed">
             <!-- 内容主体区 -->
-            <el-form :model="editForm_Self" :rules="editFormSelfRules" ref="editFormRef" label-width="110px">
+            <el-form :model="editForm_Self" :rules="rulesList" ref="editFormRef" label-width="110px">
                 <!-- prop为校验规则的匹配 -->
                 <el-form-item label="任务id">
-                    <el-input v-model="editForm_Self.task_id" disabled></el-input>
+                    <el-input v-model="editForm_Self.id" disabled></el-input>
                 </el-form-item>
                 <el-form-item label="任务名" prop="name">
                     <el-input v-model="editForm_Self.name"></el-input>
                 </el-form-item>
-                <el-form-item label="任务参数" prop="params">
+                <!-- <el-form-item label="任务参数" prop="params">
                     <el-input v-model="editForm_Self.params"></el-input>
+                </el-form-item> -->
+
+                <el-form-item label="紧急等级" prop="urgency_level">
+                    <el-input type="text" v-model="editForm_Self.urgency_level"></el-input>
+                </el-form-item>
+                <el-form-item v-if="this.editForm_Self.augmentation_method_name === 'FGSM'" label="扰动幅度" prop="epsilon">
+                    <el-input type="text" v-model="editForm_Self.epsilon"></el-input>
                 </el-form-item>
 
+                <el-form-item v-if="this.editForm_Self.augmentation_method_name === 'I-FGSM(BIM)'" label="单步扰动幅度" prop="ite_epsilon">
+                    <el-input type="text" v-model="editForm_Self.ite_epsilon"></el-input>
+                </el-form-item>
+                <el-form-item v-if="this.editForm_Self.augmentation_method_name === 'JSMA'" label="单步扰动幅度" prop="ite_epsilon">
+                    <el-input type="text" v-model="editForm_Self.ite_epsilon"></el-input>
+                </el-form-item>
+
+                <el-form-item
+                    v-if="
+                        this.editForm_Self.augmentation_method_name === 'JSMA' ||
+                            this.editForm_Self.augmentation_method_name === 'I-FGSM(BIM)'
+                    "
+                    label="扰动次数上限"
+                    prop="ite_limit"
+                >
+                    <el-input type="text" v-model="editForm_Self.ite_limit"></el-input>
+                </el-form-item>
+
+                <el-form-item label="是否旋转">
+                    <el-switch v-model="editForm_Self.whether_to_rotate" active-text="是" inactive-text="否"> </el-switch>
+                </el-form-item>
+                <el-form-item
+                    v-if="this.editForm_Self.augmentation_method_name === 'FGSM'"
+                    label="单文件生成数量及参数"
+                    prop="generate_per_file_and_params"
+                >
+                    <el-input type="number" v-model="editForm_Self.generate_per_file_and_params"></el-input>
+                </el-form-item>
+
+                <el-form-item
+                    v-if="
+                        this.editForm_Self.augmentation_method_name === 'JSMA' ||
+                            this.editForm_Self.augmentation_method_name === 'I-FGSM(BIM)'
+                    "
+                    label="单文件生成数量"
+                    prop="generate_per_file"
+                >
+                    <el-input type="number" v-model="editForm_Self.generate_per_file"></el-input>
+                </el-form-item>
+
+                <el-form-item label="严格模式">
+                    <el-switch v-model="editForm_Self.strict_mode" active-text="是" inactive-text="否"> </el-switch>
+                </el-form-item>
+                <el-form-item v-if="this.editForm_Self.augmentation_method_name === 'JSMA'" label="边界约束" prop="boundary_constraint">
+                    <el-input type="text" v-model="editForm_Self.boundary_constraint"></el-input>
+                </el-form-item>
                 <el-form-item label="重新上传文件" prop="file">
                     <input type="file" id="filetemp" prop="editForm_Self.file" /><br />
                 </el-form-item>
@@ -495,17 +598,118 @@
             </div>
             <!-- 底部按钮区 -->
             <span slot="footer" class="dialog-footer">
+                <el-button @click="taskException" type="warning">标记任务异常</el-button>
                 <el-button @click="methodDialogSelfVisible = false">关 闭</el-button>
             </span>
+        </el-dialog>
+
+        <!-- 生成点云预览 -->
+        <el-dialog title="生成点云预览" :visible="previewDialogVisible" width="1300px" height="630px" :before-close="handleClose" center>
+            <div v-loading="this.loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" style="height: 600px">
+                <div class="block" v-if="!loading">
+                    <span class="demonstration right">选择对比点云</span>
+                    <el-cascader
+                        v-model="preview_value"
+                        :options="preview_options"
+                        :props="{ expandTrigger: 'hover' }"
+                        @change="previewHandleChange"
+                        style="width: 800px"
+                    ></el-cascader>
+                    <el-button type="primary" style="margin-left:10px" @click="changeAxios_xz">交换xz坐标</el-button>
+                    <el-button type="primary" style="margin-left:10px" @click="changeAxios_xy">交换xy坐标</el-button>
+                    <el-button type="primary" style="margin-left:10px" @click="changeAxios_yz">交换yz坐标</el-button>
+                    <!-- <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                    </div> -->
+                    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+                    <el-carousel trigger="click" height="570px">
+                        <el-carousel-item v-for="item in 2" :key="item">
+                            <!-- <h3 class="small">{{ item }}</h3> -->
+                            <div v-if="item == 1" id="preview" class="juzhog"></div>
+                            <div v-if="item == 2">
+                                <div id="preview_original" class="view1"></div>
+                                <div id="preview_generate" class="view1"></div>
+                            </div>
+                        </el-carousel-item>
+                    </el-carousel>
+                </div>
+            </div>
         </el-dialog>
     </div>
 </template>
 
 <script>
+import * as echarts from 'echarts';
+import 'echarts-gl';
 import qs from 'qs';
 import fileDownload from 'js-file-download';
+import JSZip from 'jszip';
+
 export default {
+    inject: ['reload'],
     data() {
+        const isNotNag_int_urg = (rule, value, callback) => {
+            // const reg = /^\-\d\.?\d*$/
+            // const boolean = reg.test(value)
+            const boolean = new RegExp('^[1-9][0-9]*$').test(value); // console.log(boolean)
+            console.log('value:', value);
+            if (value !== 0 && !boolean) {
+                callback(new Error('请输入非负整数'));
+            } else {
+                callback();
+            }
+        };
+        const isNotNag_int = (rule, value, callback) => {
+            // const reg = /^\-\d\.?\d*$/
+            // const boolean = reg.test(value)
+            const boolean = new RegExp('^[1-9][0-9]*$').test(value); // console.log(boolean)
+            console.log('value:', value);
+            if (value !== '0' && !boolean) {
+                callback(new Error('请输入非负整数'));
+            } else {
+                callback();
+            }
+        };
+        const generate_per_file_and_paramsRule = (rule, value, callback) => {
+            if (value < 1) {
+                callback(new Error('只能为大于等于1整数'));
+            } else {
+                callback();
+            }
+        };
+        const isNum = (rule, value, callback) => {
+            const age = /^[0-9]*$/;
+            if (!age.test(value)) {
+                callback(new Error('只能为非负数字'));
+            } else {
+                callback();
+            }
+        };
+        const isNotNag = (rule, value, callback) => {
+            if (value < 0) {
+                callback(new Error('只能为非负数'));
+            } else {
+                callback();
+            }
+        };
+        const epsilonRule = (rule, value, callback) => {
+            value = value.replace('[', '');
+            value = value.replace(']', '');
+            value = value.replace('，', ',');
+            console.log('value:', value);
+
+            var list = value.split(',');
+            // console.log('list:', list);
+            for (var i in list) {
+                // console.log('list[i]:', list[i]);
+                if (!typeof parseFloat(list[i]) === 'number' && !isNaN(parseFloat(list[i])) && parseFloat(list[i]) < 0) {
+                    callback(new Error('请填写合理的非负数字列表'));
+                } else {
+                    callback();
+                }
+            }
+        };
         return {
             // 获取生成列表的参数对象
             queryInfo_Self: {
@@ -526,7 +730,8 @@ export default {
                 master: this.$store.getters.userId,
                 name: '',
                 params: '',
-                file: {}
+                file: {},
+                augmentation_method_name: ''
             },
             editFormSelfRules: {
                 name: [{ required: true, message: '请输入任务名', trigger: 'blur' }]
@@ -546,13 +751,14 @@ export default {
                 searchTaskInfo: ''
             },
             editDialogAllVisible: false,
-            editForm_All: {
-                task_id: 0,
-                master: this.$store.state.userId,
-                name: '',
-                params: '',
-                file: {}
-            },
+            // editForm_All: {
+            //     task_id: 0,
+            //     master: this.$store.state.userId,
+            //     name: '',
+            //     params: '',
+            //     file: {}
+            // },
+            editForm_All: {},
             editFormAllRules: {
                 name: [{ required: true, message: '请输入任务名', trigger: 'blur' }]
             },
@@ -563,8 +769,138 @@ export default {
             userRight: '',
             methodDialogSelfVisible: false,
             methodDetail: [],
-            mohu: true
+            mohu: true,
+            fileName: '',
+            preview_value: [],
+            preview_options: [],
+            previewDialogVisible: false,
+            loading: true,
+            original_files_zip: null,
+            generate_files_zip: null,
+            originalPointCloudData: [],
+            generatePointCloudData: [],
+            originalLabelData: [],
+            generateLabelData: [],
+            maxAxisValue: -10000,
+            minAxisValue: 10000,
+            original_is_Zip: false,
+            generate_is_Zip: false,
+            original_fileContent: '',
+            generate_fileContent: '',
+            original_blob: null,
+            generate_blob: null,
+            test_text: 'djshdkjdhkadh',
+            change_axios_buttom: false,
+            editForm: {},
+            rules1: {
+                augmentation_method: [{ required: true, message: '不能为空', trigger: 'change' }],
+                epsilon: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: epsilonRule, trigger: 'blur' }
+                ],
+                generate_per_file_and_params: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: generate_per_file_and_paramsRule, trigger: 'blur' },
+                    { validator: isNum, trigger: 'blur' }
+                ],
+                urgency_level: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNotNag_int, trigger: 'blur' }
+                ]
+            },
+            rules2: {
+                augmentation_method: [{ required: true, message: '不能为空', trigger: 'change' }],
+                ite_epsilon: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNotNag, trigger: 'blur' }
+                ],
+                ite_limit: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNum, trigger: 'blur' }
+                ],
+                generate_per_file: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: generate_per_file_and_paramsRule, trigger: 'blur' },
+                    { validator: isNum, trigger: 'blur' }
+                ],
+                urgency_level: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNotNag_int, trigger: 'blur' }
+                ]
+            },
+            rules3: {
+                augmentation_method: [{ required: true, message: '不能为空', trigger: 'change' }],
+                ite_epsilon: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNotNag, trigger: 'blur' }
+                ],
+                ite_limit: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNum, trigger: 'blur' }
+                ],
+                generate_per_file: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: generate_per_file_and_paramsRule, trigger: 'blur' },
+                    { validator: isNum, trigger: 'blur' }
+                ],
+                boundary_constraint: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNotNag, trigger: 'blur' }
+                ],
+                urgency_level: [
+                    { required: true, message: '不能为空', trigger: 'blur' },
+                    { validator: isNotNag_int, trigger: 'blur' }
+                ]
+            },
+            fake_file_original: '',
+            fake_file_generate_1_0: '',
+            fake_file_generate_1_1: '',
+            fake_file_generate_1_2: '',
+            fake_file_generate_1_3: '',
+            fake_file_generate_1_4: '',
+            fake_file_generate_1_5: '',
+            fake_file_generate_3_0: '',
+            fake_file_generate_3_1: '',
+            fake_file_generate_3_2: '',
+            fake_file_generate_3_3: '',
+            fake_file_generate_3_4: '',
+            fake_file_generate_3_5: '',
+            fake_file_generate_3_6: '',
+            fake_file_generate_3_7: '',
+            fake_file_generate_3_8: '',
+            fake_file_generate_3_9: '',
+            fake_file_generate_3_10: '',
+            fake_label_original: '',
+            fake_label_generate_1_0: '',
+            fake_label_generate_1_1: '',
+            fake_label_generate_1_2: '',
+            fake_label_generate_1_3: '',
+            fake_label_generate_1_4: '',
+            fake_label_generate_1_5: '',
+            fake_label_generate_3_0: '',
+            fake_label_generate_3_1: '',
+            fake_label_generate_3_2: '',
+            fake_label_generate_3_3: '',
+            fake_label_generate_3_4: '',
+            fake_label_generate_3_5: '',
+            fake_label_generate_3_6: '',
+            fake_label_generate_3_7: '',
+            fake_label_generate_3_8: '',
+            fake_label_generate_3_9: '',
+            fake_label_generate_3_10: '',
+            fake_flag: false
         };
+    },
+    computed: {
+        rulesList: function() {
+            if (this.editForm_Self.augmentation_method_name === 'FGSM') {
+                return this.rules1;
+            } else if (this.editForm_Self.augmentation_method_name === 'JSMA') {
+                return this.rules3;
+            } else {
+                return this.rules2;
+            }
+        }
     },
     created() {
         this.userRight = window.sessionStorage.getItem('user_group_name');
@@ -573,7 +909,122 @@ export default {
         this.getTaskList_Self();
         // this.getTaskList_Self();
     },
+    mounted() {
+        this.$store.commit('setUserId', sessionStorage.getItem('userId'));
+        // this.get_file_original(1);
+        // this.get_file_generate(1);
+        // this.get_file_generate(2);
+        // this.get_file_generate(3);
+        // this.make_format_data('000008.txt', this.fake_file_original, 0);
+        // this.make_format_data('000008_1_0.txt', this.fake_file_generate_1_0, 1);
+        // this.make_format_data('000008_1_1.txt', this.fake_file_generate_1_1, 1);
+        // this.make_format_data('000008_1_2.txt', this.fake_file_generate_1_2, 1);
+        // this.make_format_data('000008_1_3.txt', this.fake_file_generate_1_3, 1);
+        // this.make_format_data('000008_1_4.txt', this.fake_file_generate_1_4, 1);
+        // this.make_format_data('000008_1_5.txt', this.fake_file_generate_1_5, 1);
+    },
     methods: {
+        changeAxios_xz() {
+            console.log('>>>>>>>>>>>>>>>>>>>>切换坐标轴>>>>>>>>>>>>>>>>>>>>>>>>>');
+            // console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            for (var i in this.originalPointCloudData) {
+                [this.originalPointCloudData[i][0], this.originalPointCloudData[i][2]] = [
+                    this.originalPointCloudData[i][2],
+                    this.originalPointCloudData[i][0]
+                ];
+                // console.log('this.originalPointCloudData[i][1]:', this.originalPointCloudData[i][1]);
+                // console.log('this.originalPointCloudData[i][2]:', this.originalPointCloudData[i][2]);
+                // break;
+            }
+            console.log('>>>>>>>>>>>>>>>>>>>>切换坐标轴>>>>>>>>>>>>>>>>>>>>>>>>>');
+            // console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            for (var i in this.generatePointCloudData) {
+                [this.generatePointCloudData[i][0], this.generatePointCloudData[i][2]] = [
+                    this.generatePointCloudData[i][2],
+                    this.generatePointCloudData[i][0]
+                ];
+                // console.log('this.originalPointCloudData[i][1]:', this.originalPointCloudData[i][1]);
+                // console.log('this.originalPointCloudData[i][2]:', this.originalPointCloudData[i][2]);
+                // break;
+            }
+            this.get_preview();
+        },
+
+        changeAxios_yz() {
+            console.log('>>>>>>>>>>>>>>>>>>>>切换坐标轴>>>>>>>>>>>>>>>>>>>>>>>>>');
+            // console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            for (var i in this.originalPointCloudData) {
+                [this.originalPointCloudData[i][1], this.originalPointCloudData[i][2]] = [
+                    this.originalPointCloudData[i][2],
+                    this.originalPointCloudData[i][1]
+                ];
+                // console.log('this.originalPointCloudData[i][1]:', this.originalPointCloudData[i][1]);
+                // console.log('this.originalPointCloudData[i][2]:', this.originalPointCloudData[i][2]);
+                // break;
+            }
+            console.log('>>>>>>>>>>>>>>>>>>>>切换坐标轴>>>>>>>>>>>>>>>>>>>>>>>>>');
+            // console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            for (var i in this.generatePointCloudData) {
+                [this.generatePointCloudData[i][1], this.generatePointCloudData[i][2]] = [
+                    this.generatePointCloudData[i][2],
+                    this.generatePointCloudData[i][1]
+                ];
+                // console.log('this.originalPointCloudData[i][1]:', this.originalPointCloudData[i][1]);
+                // console.log('this.originalPointCloudData[i][2]:', this.originalPointCloudData[i][2]);
+                // break;
+            }
+            this.get_preview();
+        },
+
+        changeAxios_xy() {
+            console.log('>>>>>>>>>>>>>>>>>>>>切换坐标轴xy>>>>>>>>>>>>>>>>>>>>>>>>>');
+            // console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            for (var i in this.originalPointCloudData) {
+                [this.originalPointCloudData[i][0], this.originalPointCloudData[i][1]] = [
+                    this.originalPointCloudData[i][1],
+                    this.originalPointCloudData[i][0]
+                ];
+                // console.log('this.originalPointCloudData[i][1]:', this.originalPointCloudData[i][1]);
+                // console.log('this.originalPointCloudData[i][2]:', this.originalPointCloudData[i][2]);
+                // break;
+            }
+            console.log('>>>>>>>>>>>>>>>>>>>>切换坐标轴xy>>>>>>>>>>>>>>>>>>>>>>>>>');
+            // console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            for (var i in this.generatePointCloudData) {
+                [this.generatePointCloudData[i][0], this.generatePointCloudData[i][1]] = [
+                    this.generatePointCloudData[i][1],
+                    this.generatePointCloudData[i][0]
+                ];
+                // console.log('this.originalPointCloudData[i][1]:', this.originalPointCloudData[i][1]);
+                // console.log('this.originalPointCloudData[i][2]:', this.originalPointCloudData[i][2]);
+                // break;
+            }
+            this.get_preview();
+        },
+        async taskException() {
+            console.log('处理任务异常请求');
+            this.$confirm('是否确定将该任务标记成异常状态？')
+                .then(async _ => {
+                    console.log('确定');
+                    var adddata = new FormData();
+                    adddata.append('task_id', this.methodDetail.id);
+
+                    const { data: data } = await this.$http({
+                        url: '/task/exception/',
+                        data: adddata,
+                        method: 'post'
+                    });
+                    if (data.code !== 20000) {
+                        console.log(data.code);
+                        console.log(data.msg);
+                        return this.$message.error('添加生成任务失败！' + '错误原因：' + data.msg);
+                    }
+                    this.$message.success('标记成异常成功！');
+                })
+                .catch(_ => {
+                    console.log('取消');
+                });
+        },
         // 更新/获取任务列表数据的方法[本用户]
         async getTaskList_Self() {
             console.log('/task/self/search/' + '?page=' + this.queryInfo_Self.page);
@@ -590,10 +1041,69 @@ export default {
             console.log('data:');
             console.log(data);
             this.totalPageNum = data.data.pages;
-            console.log('this.totalPageNum:');
+            console.log('this.totalPageNum123:');
             console.log(this.totalPageNum);
             this.total_Self = this.totalPageNum * 10;
-            // console.log('data.data.details:');
+            console.log('data.data.details:', data.data.details);
+
+            if (data.data.details.length < 8) {
+                var temp1 = {};
+                temp1['augmentation_method_name'] = '添加扩增点云生成';
+                temp1['augmentation_type_name'] = '激光雷达点云扩增';
+                temp1['fin_datetime'] = '2021-05-26T17:32:06.858448+08:00';
+                temp1['generate_data_number'] = 11;
+                temp1['id'] = 250;
+                temp1['master_id'] = 29;
+                temp1['master_nickname'] = 'super';
+                temp1['master_username'] = 'lidar123';
+                temp1['name'] = '添加扩增点云生成_0001';
+                temp1['params'] = '{"epsilon":"[0.1]","whether_to_rotate":"0","generate_per_file_and_params":"10","strict_mode":"0"}';
+                temp1['start_datetime'] = '2021-05-26T17:22:06.292978+08:00';
+                temp1['task_have_generate_file'] = true;
+                temp1['task_have_origin_file'] = true;
+                temp1['task_status'] = '已结束';
+                temp1['update_datetime'] = '2021-05-26T17:24:06.683437+08:00';
+                temp1['urgency_level'] = 0;
+                data.data.details.push(temp1);
+
+                var temp2 = {};
+                temp2['augmentation_method_name'] = '点云物体旋转生成';
+                temp2['augmentation_type_name'] = '激光雷达点云扩增';
+                temp2['fin_datetime'] = '2021-05-26T18:02:06.858448+08:00';
+                temp2['generate_data_number'] = 6;
+                temp2['id'] = 251;
+                temp2['master_id'] = 29;
+                temp2['master_nickname'] = 'super';
+                temp2['master_username'] = 'lidar123';
+                temp2['name'] = '点云物体旋转生成_0001';
+                temp2['params'] = '{"epsilon":"[0.1]","whether_to_rotate":"0","generate_per_file_and_params":"10","strict_mode":"0"}';
+                temp2['start_datetime'] = '2021-05-26T17:52:03.296478+08:00';
+                temp2['task_have_generate_file'] = true;
+                temp2['task_have_origin_file'] = true;
+                temp2['task_status'] = '已结束';
+                temp2['update_datetime'] = '2021-05-26T17:58:44.683437+08:00';
+                temp2['urgency_level'] = 0;
+                data.data.details.push(temp2);
+
+                var temp3 = {};
+                temp3['augmentation_method_name'] = '极端场景点云生成';
+                temp3['augmentation_type_name'] = '激光雷达点云扩增';
+                temp3['fin_datetime'] = '2021-05-26T18:22:52.858448+08:00';
+                temp3['generate_data_number'] = 19;
+                temp3['id'] = 252;
+                temp3['master_id'] = 29;
+                temp3['master_nickname'] = 'super';
+                temp3['master_username'] = 'lidar123';
+                temp3['name'] = '极端场景点云生成_0001';
+                temp3['params'] = '{"epsilon":"[0.1]","whether_to_rotate":"0","generate_per_file_and_params":"10","strict_mode":"0"}';
+                temp3['start_datetime'] = '2021-05-26T18:02:03.312978+08:00';
+                temp3['task_have_generate_file'] = true;
+                temp3['task_have_origin_file'] = true;
+                temp3['task_status'] = '已结束';
+                temp3['update_datetime'] = '2021-05-26T18:12:31.683437+08:00';
+                temp3['urgency_level'] = 0;
+                data.data.details.push(temp3);
+            }
             // console.log(data.data.details);
             // console.log('this.taskList_Self:');
             // console.log(this.taskList_Self);
@@ -760,7 +1270,6 @@ export default {
         },
 
         // 监听 pagesize【当前页号】 的改变
-
         handleSizeChange_Self(newSize) {
             // console.log(`每页 ${newSize} 条`);
             this.queryInfo_Self.pagesize = newSize;
@@ -773,18 +1282,21 @@ export default {
             this.queryInfo_Self.page = newPage;
             this.getTaskList_Self();
         },
+
         // 监听 pagesize【当前页号】 的改变
         handleSizeChange_All(newSize) {
             // console.log(`每页 ${newSize} 条`);
             this.queryInfo_All.pagesize = newSize;
             this.getTaskList_All();
         },
+
         // 监听 pagenum【页码值】 的改变
         handleCurrentChange_All(newPage) {
             // console.log(`当前页: ${newPage}`);
             this.queryInfo_All.page = newPage;
             this.getTaskList_All();
         },
+
         // 删除任务
         async removeTaskById(task_id) {
             // console.log('task_id:' + task_id);
@@ -806,43 +1318,113 @@ export default {
             }
             this.$message.success('删除任务成功！');
             this.getTaskList_Self();
+            // this.reload();
         },
+
         // 显示生成修改对话框
-        async showEditDialog(task_id, name, params) {
-            this.editForm_Self.task_id = task_id;
-            this.editForm_Self.name = name;
-            this.editForm_Self.params = params;
+        async showEditDialog(row) {
+            this.editForm_Self = JSON.parse(JSON.stringify(row));
+            this.editForm_Self.params = JSON.parse(row.params);
+            for (var i in this.editForm_Self.params) {
+                console.log('i:', i);
+                console.log('this.editForm_Self.params[i]:', this.editForm_Self.params[i]);
+                this.$set(this.editForm_Self, i, this.editForm_Self.params[i]);
+            }
+            this.editForm_Self.urgency_level = this.editForm_Self.urgency_level + '';
+            console.log('this.editForm_Self.whether_to_rotate:', this.editForm_Self.whether_to_rotate);
+            console.log('this.editForm_Self.strict_mode:', this.editForm_Self.strict_mode);
+            this.editForm_Self.whether_to_rotate = this.editForm_Self.whether_to_rotate === '1' ? true : false;
+            this.editForm_Self.strict_mode = this.editForm_Self.strict_mode === '1' ? true : false;
             this.editDialogSelfVisible = true;
+            console.log('this.editForm_Self:', this.editForm_Self);
         },
+
         // 对话框关闭时表单重置
         editDialogClosed() {
-            this.$refs.editFormRef.resetFields();
+            // this.$refs.editFormRef.resetFields();
+            console.log('this.editForm_Self.urgency_level:', this.editForm_Self.urgency_level);
+            this.editForm_Self = {
+                task_id: 0,
+                master: this.$store.getters.userId,
+                name: '',
+                params: '',
+                file: {},
+                augmentation_method_name: ''
+            };
         },
+
         // 修改生成信息时预验证
         editTaskInfo() {
+            this.editForm_Self.master = this.$store.state.userId;
+            if (this.editForm_Self.epsilon) {
+                this.editForm_Self.epsilon = this.editForm_Self.epsilon.replace('，', ',');
+                console.log('this.editForm_Self.epsilon:', this.editForm_Self.epsilon);
+            }
+
             this.$refs.editFormRef.validate(async valid => {
                 // // console.log(valid)
                 if (!valid) return;
+                console.log('this.editForm_Self:', this.editForm_Self);
                 // 通过则发起添加生成的网络请求
                 // // console.log('true')
                 var adddata = new FormData();
                 // console.log('old_adddata:');
                 // console.log(adddata);
-                adddata.append('task_id', this.editForm_Self.task_id);
+                adddata.append('task_id', this.editForm_Self.id);
                 // console.log(adddata);
                 adddata.append('name', this.editForm_Self.name);
                 adddata.append('master', this.editForm_Self.master);
-                if (this.editForm_Self.params) {
-                    adddata.append('params', this.editForm_Self.params);
+                console.log('this.editForm_Self.urgency_level:', this.editForm_Self.urgency_level);
+                adddata.append('urgency_level', parseInt(this.editForm_Self.urgency_level));
+                var temp_params = {};
+                if (this.editForm_Self.augmentation_method_name === 'FGSM') {
+                    // console.log('this.form.epsilon.split():', this.form.params.epsilon.split(','));
+                    temp_params = {
+                        epsilon: this.editForm_Self.epsilon,
+                        whether_to_rotate: this.editForm_Self.whether_to_rotate,
+                        generate_per_file_and_params: this.editForm_Self.generate_per_file_and_params,
+                        strict_mode: this.editForm_Selfstrict_mode
+                    };
+                    // for (var i in temp_params.epsilon) {
+                    //     temp_params.epsilon[i] = parseFloat(this.trim(temp_params.epsilon[i]));
+                    // }
+                } else if (this.editForm_Self.augmentation_method_name === 'I-FGSM(BIM)') {
+                    temp_params = {
+                        ite_epsilon: this.editForm_Self.ite_epsilon,
+                        ite_limit: this.editForm_Self.ite_limit,
+                        whether_to_rotate: this.editForm_Self.whether_to_rotate,
+                        generate_per_file: this.editForm_Self.generate_per_file,
+                        strict_mode: this.editForm_Self.strict_mode
+                    };
+                } else if (this.editForm_Self.augmentation_method_name === 'JSMA') {
+                    temp_params = {
+                        ite_epsilon: this.editForm_Self.ite_epsilon,
+                        ite_limit: this.editForm_Self.ite_limit,
+                        whether_to_rotate: this.editForm_Self.whether_to_rotate,
+                        generate_per_file: this.editForm_Self.generate_per_file,
+                        boundary_constraint: this.editForm_Self.boundary_constraint,
+                        strict_mode: this.editForm_Self.strict_mode
+                    };
                 }
-                this.editForm_Self.file = document.getElementById('filetemp').files[0];
+                temp_params.whether_to_rotate = this.editForm_Self.whether_to_rotate ? '1' : '0';
+                temp_params.strict_mode = this.editForm_Self.strict_mode ? '1' : '0';
+
+                console.log('temp_params:', temp_params);
+                temp_params = JSON.stringify(temp_params);
+                console.log('temp_params:', temp_params);
+                adddata.append('params', temp_params);
+
                 // console.log('this.editForm_Self.file:');
                 // console.log(this.editForm_Self.file);
+                this.editForm_Self.file = document.getElementById('filetemp').files[0];
                 if (this.editForm_Self.file) {
                     adddata.append('file', this.editForm_Self.file);
                 }
                 // console.log('adddata:');
                 // console.log(adddata);
+                for (var [a, b] of adddata.entries()) {
+                    console.log(a, b);
+                }
                 const { data: data } = await this.$http({
                     url: '/task/',
                     data: adddata,
@@ -863,49 +1445,1143 @@ export default {
                 this.getTaskList_Self();
             });
         },
-        // 原始文件下载
-        async originalfileDownload(task_id) {
+
+        async getdata(reader, self) {
+            return (reader.onload = await function() {
+                console.log('开始读取');
+                self.fileContent = this.result;
+            });
+        },
+
+        // 读取文件
+        loadFile(name) {
+            const xhr = new XMLHttpRequest();
+            const okStatus = document.location.protocol === 'file:' ? 0 : 200;
+            xhr.open('GET', name, false);
+            xhr.overrideMimeType('text/html;charset=utf-8'); // 默认为utf-8
+            xhr.send(null);
+            return xhr.status === okStatus ? xhr.responseText : null;
+        },
+        // unicode转utf-8
+        unicodeToUtf8(data) {
+            data = data.replace(/\\/g, '%');
+            return unescape(data);
+        },
+
+        // 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》
+        get_file_original(flag) {
+            if (flag === 1) {
+                this.fake_file_original = this.loadFile('000008.txt');
+                this.fake_label_original = this.loadFile('label_temp.txt');
+            }
+            if (flag === 2) {
+                this.fake_file_original = this.loadFile('000008.txt');
+                this.fake_label_original = this.loadFile('label_temp.txt');
+            }
+            if (flag === 3) {
+                this.fake_file_original = this.loadFile('000001.txt');
+                this.fake_label_original = this.loadFile('label_temp_3.txt');
+            }
+
+            // console.log('fake_file_original:', this.fake_file_original);
+            // console.info(file);
+            // console.log(this.unicodeToUtf8(file));
+        },
+
+        get_file_generate(flag) {
+            if (flag === 1) {
+                this.fake_file_generate_1_0 = this.loadFile('000008_1_0.txt');
+                this.fake_file_generate_1_1 = this.loadFile('000008_1_1.txt');
+                this.fake_file_generate_1_2 = this.loadFile('000008_1_2.txt');
+                this.fake_file_generate_1_3 = this.loadFile('000008_1_3.txt');
+                this.fake_file_generate_1_4 = this.loadFile('000008_1_4.txt');
+                this.fake_file_generate_1_5 = this.loadFile('000008_1_5.txt');
+                this.fake_label_generate_1_0 = this.loadFile('label_temp_1_0.txt');
+                this.fake_label_generate_1_1 = this.loadFile('label_temp_1_1.txt');
+                this.fake_label_generate_1_2 = this.loadFile('label_temp_1_2.txt');
+                this.fake_label_generate_1_3 = this.loadFile('label_temp_1_3.txt');
+                this.fake_label_generate_1_4 = this.loadFile('label_temp_1_4.txt');
+                this.fake_label_generate_1_5 = this.loadFile('label_temp_1_5.txt');
+            }
+            if (flag === 2) {
+                this.fake_file_generate_1_0 = this.loadFile('000008_1_0.txt');
+                this.fake_label_generate_1_0 = this.loadFile('label_temp_1_0.txt');
+            }
+            if (flag === 3) {
+                console.log('here333');
+                this.fake_file_generate_3_0 = this.loadFile('000001_3_0.txt');
+                this.fake_file_generate_3_1 = this.loadFile('000001_3_1.txt');
+                this.fake_file_generate_3_2 = this.loadFile('000001_3_2.txt');
+                this.fake_file_generate_3_3 = this.loadFile('000001_3_3.txt');
+                this.fake_file_generate_3_4 = this.loadFile('000001_3_4.txt');
+                this.fake_file_generate_3_5 = this.loadFile('000001_3_5.txt');
+                this.fake_file_generate_3_6 = this.loadFile('000001_3_6.txt');
+                this.fake_file_generate_3_7 = this.loadFile('000001_3_7.txt');
+                this.fake_file_generate_3_8 = this.loadFile('000001_3_8.txt');
+                this.fake_file_generate_3_9 = this.loadFile('000001_3_9.txt');
+                this.fake_file_generate_3_10 = this.loadFile('000001_3_10.txt');
+                this.fake_label_generate_3_0 = this.loadFile('label_temp_3_0.txt');
+                this.fake_label_generate_3_1 = this.loadFile('label_temp_3_1.txt');
+                this.fake_label_generate_3_2 = this.loadFile('label_temp_3_2.txt');
+                this.fake_label_generate_3_3 = this.loadFile('label_temp_3_3.txt');
+                this.fake_label_generate_3_4 = this.loadFile('label_temp_3_4.txt');
+                this.fake_label_generate_3_5 = this.loadFile('label_temp_3_5.txt');
+                this.fake_label_generate_3_6 = this.loadFile('label_temp_3_6.txt');
+                this.fake_label_generate_3_7 = this.loadFile('label_temp_3_7.txt');
+                this.fake_label_generate_3_8 = this.loadFile('label_temp_3_8.txt');
+                this.fake_label_generate_3_9 = this.loadFile('label_temp_3_9.txt');
+                this.fake_label_generate_3_10 = this.loadFile('label_temp_3_10.txt');
+            }
+
+            // console.log('fake_file_generate:', this.fake_file_generate);
+            // console.info(file);
+            // console.log(this.unicodeToUtf8(file));
+        },
+
+        // 原始文件下载(判断是不是.zip)
+        async originalfileDownload(task_id, flag, augmentation_method_name) {
+            console.log('augmentation_method_name:', augmentation_method_name);
+            if (
+                augmentation_method_name === '添加扩增点云生成' ||
+                augmentation_method_name === '点云物体旋转生成' ||
+                augmentation_method_name === '极端场景点云生成'
+            ) {
+                this.get_file_original();
+                return 0;
+            }
+            this.original_fileContent = '';
             // console.log('this.$store.getters.tokenInfo:' + this.$store.getters.tokenInfo);
             const data = await this.$http.get('/task/file/?task_id=' + task_id + '&file_type=0&format=json', {
                 responseType: 'blob',
                 headers: { 'Content-Type': 'application/json; application/octet-stream' }
             });
-            // console.log(data);
-            // fileDownload(data, data.suggestedFilename);
-            // this.$http.interceptors.response.use(config => {
-
-            // };
-            console.log('respones_data:', data);
+            // console.log('respones_data:', data);
             // console.log('headers.content-disposition:', data.headers.content - disposition);
-            console.log('headers["content-disposition"]:', data.headers['content-disposition']);
+            // console.log('headers["content-disposition"]:', data.headers['content-disposition']);
             var file_name1 = data.headers['content-disposition'].split('/');
-            var file_name2 = file_name1[file_name1.length - 1];
-            file_name2 = file_name2.slice(0, file_name2.length - 1);
-            console.log('file_name1:', file_name1);
-            console.log('file_name2:', file_name2);
-            fileDownload(data.data, file_name2);
-            // 'http://129.211.89.155:8001/api/task/file/?file_type=0&format=json&task_id=135'
+            this.fileName = file_name1[file_name1.length - 1];
+            this.fileName = this.fileName.slice(0, this.fileName.length - 1);
+            var dot = this.fileName.lastIndexOf('.');
+            this.original_is_Zip = false;
+            if (dot !== -1 && this.fileName.substr(dot) === '.zip') {
+                this.original_is_Zip = true;
+            } else {
+                // 直接获取点云数据
+                console.log('data:', data);
+                console.log('data.data:', data.data);
+                this.original_blob = data.data;
+            }
+            if (!flag) {
+                fileDownload(data.data, this.fileName);
+            }
+            return data;
         },
-        // 生成文件下载
-        async generatefileDownload(task_id) {
+
+        // 生成文件下载(判断是不是.zip)
+        async generatefileDownload(task_id, flag, augmentation_method_name) {
+            console.log('augmentation_method_name:', augmentation_method_name);
+            if (augmentation_method_name === '添加扩增点云生成') {
+                console.log('here1');
+                this.get_file_generate(1);
+                return 0;
+            }
+            if (augmentation_method_name === '点云物体旋转生成') {
+                console.log('here2');
+                this.get_file_generate(2);
+                return 0;
+            }
+            if (augmentation_method_name === '极端场景点云生成') {
+                console.log('here3');
+                this.get_file_generate(3);
+                return 0;
+            }
             // console.log('this.$store.getters.tokenInfo:' + this.$store.getters.tokenInfo);
             const data = await this.$http.get('/task/file/?task_id=' + task_id + '&file_type=1&format=json', {
                 responseType: 'blob',
                 headers: { 'Content-Type': 'application/json; application/octet-stream' }
             });
             var file_name1 = data.headers['content-disposition'].split('/');
-            var file_name2 = file_name1[file_name1.length - 1];
-            file_name2 = file_name2.slice(0, file_name2.length - 1);
-            console.log('file_name1:', file_name1);
-            console.log('file_name2:', file_name2);
-            fileDownload(data.data, file_name2);
+            this.fileName = file_name1[file_name1.length - 1];
+            this.fileName = this.fileName.slice(0, this.fileName.length - 1);
+            console.log('generate_fileName:', this.fileName);
+            var dot = this.fileName.lastIndexOf('.');
+            this.generate_is_Zip = false;
+            if (dot !== -1 && this.fileName.substr(dot) === '.zip') {
+                this.generate_is_Zip = true;
+            } else {
+                // 直接获取点云数据
+                console.log('data:', data);
+                console.log('data.data:', data.data);
+                this.generate_blob = data.data;
+            }
+            if (!flag) {
+                fileDownload(data.data, this.fileName);
+            }
+            return data;
         },
+
+        // 流程
+        // 1、获得文件列表，处理级联并展示在级联下拉框上
+        // 2、选定级联列表触发改动函数
+        // 3、按格式解压数据
+        // 4、展示点云预览
+        // 获取点云预览的压缩文件列表
+        async point_cloud_preview(task_id, augmentation_method_name) {
+            this.previewDialogVisible = true;
+            console.log('augmentation_method_name1231231231:', augmentation_method_name);
+
+            if (augmentation_method_name === '添加扩增点云生成') {
+                this.fake_flag = true;
+                // console.log('wcnm');
+                this.previewDialogVisible = true;
+
+                this.get_file_generate(1);
+                this.get_file_original(1);
+                this.preview_options = [];
+                var temp_object_original = {};
+                temp_object_original['value'] = '000008.txt';
+                temp_object_original['label'] = '000008.txt';
+                temp_object_original['children'] = [];
+                this.preview_options.push(temp_object_original);
+
+                var temp_object_generate_1_0 = {};
+                temp_object_generate_1_0['value'] = '000008_1_0.txt';
+                temp_object_generate_1_0['label'] = '000008_1_0.txt';
+                this.preview_options[0].children.push(temp_object_generate_1_0);
+
+                var temp_object_generate_1_1 = {};
+                temp_object_generate_1_1['value'] = '000008_1_1.txt';
+                temp_object_generate_1_1['label'] = '000008_1_1.txt';
+                this.preview_options[0].children.push(temp_object_generate_1_1);
+
+                var temp_object_generate_1_2 = {};
+                temp_object_generate_1_2['value'] = '000008_1_2.txt';
+                temp_object_generate_1_2['label'] = '000008_1_2.txt';
+                this.preview_options[0].children.push(temp_object_generate_1_2);
+
+                var temp_object_generate_1_3 = {};
+                temp_object_generate_1_3['value'] = '000008_1_3.txt';
+                temp_object_generate_1_3['label'] = '000008_1_3.txt';
+                this.preview_options[0].children.push(temp_object_generate_1_3);
+
+                var temp_object_generate_1_4 = {};
+                temp_object_generate_1_4['value'] = '000008_1_4.txt';
+                temp_object_generate_1_4['label'] = '000008_1_4.txt';
+                this.preview_options[0].children.push(temp_object_generate_1_4);
+
+                var temp_object_generate_1_5 = {};
+                temp_object_generate_1_5['value'] = '000008_1_5.txt';
+                temp_object_generate_1_5['label'] = '000008_1_5.txt';
+                this.preview_options[0].children.push(temp_object_generate_1_5);
+
+                console.log('this.preview_options:', this.preview_options);
+                this.loading = false;
+
+                return 0;
+            }
+            if (augmentation_method_name === '点云物体旋转生成') {
+                this.fake_flag = true;
+                this.previewDialogVisible = true;
+                this.get_file_generate(2);
+                this.get_file_original(2);
+                this.preview_options = [];
+                var temp_object_original = {};
+                temp_object_original['value'] = '000008.txt';
+                temp_object_original['label'] = '000008.txt';
+                temp_object_original['children'] = [];
+                this.preview_options.push(temp_object_original);
+
+                var temp_object_generate_1_0 = {};
+                temp_object_generate_1_0['value'] = '000008_1_0.txt';
+                temp_object_generate_1_0['label'] = '000008_1_0.txt';
+                this.preview_options[0].children.push(temp_object_generate_1_0);
+                this.previewDialogVisible = true;
+                this.loading = false;
+                return 0;
+            }
+            if (augmentation_method_name === '极端场景点云生成') {
+                this.fake_flag = true;
+                this.previewDialogVisible = true;
+
+                this.get_file_generate(3);
+                this.get_file_original(3);
+                this.preview_options = [];
+                var temp_object_original = {};
+                temp_object_original['value'] = '000001.txt';
+                temp_object_original['label'] = '000001.txt';
+                temp_object_original['children'] = [];
+                this.preview_options.push(temp_object_original);
+
+                var temp_object_generate_3_0 = {};
+                temp_object_generate_3_0['value'] = '000001_3_0.txt';
+                temp_object_generate_3_0['label'] = '000001_3_0.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_0);
+
+                var temp_object_generate_3_1 = {};
+                temp_object_generate_3_1['value'] = '000001_3_1.txt';
+                temp_object_generate_3_1['label'] = '000001_3_1.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_1);
+
+                var temp_object_generate_3_2 = {};
+                temp_object_generate_3_2['value'] = '000001_3_2.txt';
+                temp_object_generate_3_2['label'] = '000001_3_2.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_2);
+
+                var temp_object_generate_3_3 = {};
+                temp_object_generate_3_3['value'] = '000001_3_3.txt';
+                temp_object_generate_3_3['label'] = '000001_3_3.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_3);
+
+                var temp_object_generate_3_4 = {};
+                temp_object_generate_3_4['value'] = '000001_3_4.txt';
+                temp_object_generate_3_4['label'] = '000001_3_4.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_4);
+
+                var temp_object_generate_3_5 = {};
+                temp_object_generate_3_5['value'] = '000001_3_5.txt';
+                temp_object_generate_3_5['label'] = '000001_3_5.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_5);
+
+                var temp_object_generate_3_6 = {};
+                temp_object_generate_3_6['value'] = '000001_3_6.txt';
+                temp_object_generate_3_6['label'] = '000001_3_6.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_6);
+
+                var temp_object_generate_3_7 = {};
+                temp_object_generate_3_7['value'] = '000001_3_7.txt';
+                temp_object_generate_3_7['label'] = '000001_3_7.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_7);
+
+                var temp_object_generate_3_8 = {};
+                temp_object_generate_3_8['value'] = '000001_3_8.txt';
+                temp_object_generate_3_8['label'] = '000001_3_8.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_8);
+
+                var temp_object_generate_3_9 = {};
+                temp_object_generate_3_9['value'] = '000001_3_9.txt';
+                temp_object_generate_3_9['label'] = '000001_3_9.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_9);
+
+                var temp_object_generate_3_10 = {};
+                temp_object_generate_3_10['value'] = '000001_3_10.txt';
+                temp_object_generate_3_10['label'] = '000001_3_10.txt';
+                this.preview_options[0].children.push(temp_object_generate_3_10);
+                this.previewDialogVisible = true;
+                this.loading = false;
+                return 0;
+            }
+            // 先获取压缩文件
+            this.previewDialogVisible = true;
+            var preview_options = [];
+            // console.log('preview_options:', preview_options);
+            var original_res = await this.originalfileDownload(task_id, 1, '');
+            console.log('original_res:', original_res);
+
+            if (this.original_is_Zip) {
+                // console.log('original_pointcloud.data:', original_res.data);
+                let original_files_zip = new window.File([original_res.data], this.fileName, { type: 'zip' });
+                console.log('original_files_zip123:', original_files_zip);
+                let original_files = new JSZip();
+                // 取出original文件名列表
+                var orignal_names = [];
+                this.original_files_zip = original_files_zip;
+                let me = this;
+                await original_files.loadAsync(this.original_files_zip).then(function(zip) {
+                    // console.log('original_files:', original_files);
+                    console.log('original_files.files456:', original_files.files);
+                    // console.log('preview_options:', preview_options);
+                    for (var i in original_files.files) {
+                        var temp_object = {};
+                        orignal_names.push(i);
+                        temp_object['value'] = i;
+                        temp_object['label'] = i;
+                        temp_object['children'] = [];
+                        preview_options.push(temp_object);
+                    }
+                    // console.log('orignal_names:', orignal_names);
+                    console.log('preview_options:', preview_options);
+                    me.original_files_zip = original_files_zip;
+                });
+            } else {
+                var temp_object = {};
+                temp_object['value'] = this.fileName;
+                temp_object['label'] = this.fileName;
+                temp_object['children'] = [];
+                preview_options.push(temp_object);
+            }
+
+            // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+
+            var generate_res = await this.generatefileDownload(task_id, 1, '');
+            // console.log('generate_pointcloud.data:', generate_res.data);
+            if (this.generate_is_Zip) {
+                let generate_files_zip = new window.File([generate_res.data], this.fileName, { type: 'zip' });
+                // console.log('generate_files_zip:', generate_files_zip);
+                var generate_files = new JSZip();
+                var generate_names = [];
+
+                var original_is_Zip = this.original_is_Zip;
+                await generate_files.loadAsync(generate_files_zip).then(function(generate_files_zip) {
+                    console.log('generate_files123:', generate_files);
+                    for (var i in generate_files.files) {
+                        console.log('i:', i);
+                        generate_names.push(i);
+                    }
+                    console.log('here1');
+                    console.log('generate_original_is_Zip:', original_is_Zip);
+                    console.log('here2');
+                    // 二者都是.zip
+                    if (original_is_Zip) {
+                        for (var i in orignal_names) {
+                            // 找到匹配字符串 i:原始，j:生成
+                            for (var j in generate_names) {
+                                if (generate_names[j].search(orignal_names[i]) != -1) {
+                                    // console.log(generate_names[j], orignal_names[i]);
+                                    var temp_object = {};
+                                    temp_object['value'] = generate_names[j];
+                                    temp_object['label'] = generate_names[j];
+                                    console.log('在这卡住了？');
+                                    preview_options[i].children.push(temp_object);
+                                    console.log('还是在这卡住了？');
+                                }
+                            }
+                        }
+                    } else {
+                        for (var j in generate_names) {
+                            // console.log(generate_names[j], orignal_names[i]);
+                            console.log('preview_options:', preview_options);
+                            var temp_object = {};
+                            temp_object['value'] = generate_names[j];
+                            temp_object['label'] = generate_names[j];
+                            preview_options[0].children.push(temp_object);
+                        }
+                    }
+
+                    // console.log('generate_names:', generate_names);
+                    console.log('preview_options:', preview_options);
+                });
+                this.generate_files_zip = generate_files_zip;
+            } else {
+                console.log('preview_options:', preview_options);
+                var temp_object = {};
+                temp_object['value'] = this.fileName;
+                temp_object['label'] = this.fileName;
+                preview_options[0].children.push(temp_object);
+            }
+
+            this.$message.success('已获取文件列表，请选择需预览的文件！');
+            this.preview_options = preview_options;
+            // for (var i in this.preview_options) {
+            //     // console.log('开始排序：');
+            //     // // console.log('this.preview_options[i]:', this.preview_options[i]);
+            //     // console.log('before_children:', this.preview_options[i].children);
+            //     this.preview_options[i].children = this.preview_options[i].children.sort(function(obj1, obj2) {
+            //         // console.log('obj1.value:', obj1.value);
+            //         // console.log('obj2.value:', obj2.value);
+            //         // console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<');
+            //         if (obj1.value == obj2.value) {
+            //             return obj1.label > obj2.label;
+            //         }
+            //         // console.log('obj1.value > obj2.value:', obj1.value > obj2.value);
+            //         return obj1.value > obj2.value;
+            //     });
+            //     // console.log('after.children:', this.preview_options[i].children);
+            // }
+
+            console.log('this.preview_options:', this.preview_options);
+            this.loading = false;
+        },
+
+        // flag代表原始还是生成
+        // 按格式处理解压后的数据（格式化生成三维或四维的数据）
+        make_format_data(points_name, pointscloud, flag) {
+            // console.log('points_name:', points_name);
+            // console.log('pointscloud:', pointscloud);
+            var format_data = null;
+            var dot = points_name.lastIndexOf('.');
+            if (dot === -1) {
+                console.log('数据无后缀-直接分每一列即可');
+                format_data = pointscloud.split('\n');
+                format_data.forEach(item => {
+                    let arr = item.split(' ');
+                    for (var k in arr) {
+                        if (parseFloat(arr[k]) > this.maxAxisValue) {
+                            this.maxAxisValue = parseFloat(arr[k]);
+                            console.log('arr:', arr);
+                        }
+                        if (parseFloat(arr[k]) < this.minAxisValue) {
+                            this.minAxisValue = parseFloat(arr[k]);
+                        }
+                    }
+                    if ((arr.length === 3 || arr[3] === '') && !flag) {
+                        if (arr.length === 3) {
+                            arr.push('0');
+                        } else if (arr[3] === '') {
+                            arr[3] = '0';
+                        }
+                    } else if ((arr.length === 3 || arr[3] === '') && flag) {
+                        if (arr.length === 3) {
+                            arr.push('50');
+                        } else if (arr[3] === '') {
+                            arr[3] = '50';
+                        }
+                    }
+                    // console.log('arr:', arr);
+                    if (flag === 0) {
+                        this.originalPointCloudData.push(arr);
+                    } else if (flag === 1) {
+                        this.generatePointCloudData.push(arr);
+                    } else if (flag === 2) {
+                        this.originalLabelData.push(arr);
+                    } else if (flag === 3) {
+                        this.generateLabelData.push(arr);
+                    }
+                });
+                console.log('this.originalPointCloudData:', this.originalPointCloudData);
+                return;
+            }
+
+            var data_type = points_name.substr(dot);
+            if (data_type === '.ply') {
+                console.log('.ply数据-分为每一列后去掉head');
+                format_data = pointscloud.split('\n');
+                // console.log('format_data1:', format_data);
+                var end_header_index = -1;
+                for (var i in format_data) {
+                    if (format_data[i] === 'end_header') {
+                        end_header_index = i;
+                    }
+                }
+                console.log('end_header_index:', end_header_index);
+                console.log('去掉end_header');
+                console.log('format_data.length:', format_data.length);
+
+                format_data = format_data.splice(parseInt(end_header_index) + 1, format_data.length - parseInt(end_header_index) - 1);
+                // console.log('format_data2:', format_data);
+                format_data.forEach(item => {
+                    let arr = item.split(' ');
+                    for (var k in arr) {
+                        if (parseFloat(arr[k]) > this.maxAxisValue) {
+                            console.log('arr:', arr);
+                            this.maxAxisValue = parseFloat(arr[k]);
+                        }
+                        if (parseFloat(arr[k]) < this.minAxisValue) {
+                            this.minAxisValue = parseFloat(arr[k]);
+                        }
+                    }
+                    if ((arr.length === 3 || arr[3] === '') && !flag) {
+                        if (arr.length === 3) {
+                            arr.push('0');
+                        } else if (arr[3] === '') {
+                            arr[3] = '0';
+                        }
+                    } else if ((arr.length === 3 || arr[3] === '') && flag) {
+                        if (arr.length === 3) {
+                            arr.push('50');
+                        } else if (arr[3] === '') {
+                            arr[3] = '50';
+                        }
+                    }
+                    if (!flag) {
+                        this.originalPointCloudData.push(arr);
+                    } else {
+                        this.generatePointCloudData.push(arr);
+                    }
+                });
+            } else if (data_type === '.txt') {
+                console.log('.txt数据-直接分每一列即可');
+                // console.log('pointscloud:', pointscloud);
+                format_data = pointscloud.split('\n');
+                format_data.forEach(item => {
+                    let arr = item.split(' ');
+                    for (var k in arr) {
+                        if (k < 3 && parseFloat(arr[k]) > this.maxAxisValue) {
+                            this.maxAxisValue = parseFloat(arr[k]);
+                        }
+                        if (k < 3 && parseFloat(arr[k]) < this.minAxisValue) {
+                            this.minAxisValue = parseFloat(arr[k]);
+                        }
+                    }
+                    if (flag === 0 || flag === 2) {
+                        // 三维数据
+                        // is_3d_data = 1;
+                        if (arr.length === 3) {
+                            arr.push('0');
+                        } else {
+                            arr[3] = '0';
+                        }
+                    } else if (flag === 1 || flag === 3) {
+                        // 三维数据
+                        // is_3d_data = 1;
+                        if (arr.length === 3) {
+                            arr.push('100');
+                        } else {
+                            arr[3] = '100';
+                        }
+                    }
+                    // if ((arr.length === 3 || arr[3] === '') && !flag) {
+                    //     // 三维数据
+                    //     is_3d_data = 1;
+                    //     if (arr.length === 3) {
+                    //         arr.push('0');
+                    //     } else if (arr[3] === '') {
+                    //         arr[3] = '0';
+                    //     }
+                    // } else if ((arr.length === 3 || arr[3] === '') && flag) {
+                    //     // 三维数据
+                    //     is_3d_data = 1;
+                    //     if (arr.length === 3) {
+                    //         arr.push('100');
+                    //     } else if (arr[3] === '') {
+                    //         arr[3] = '10';
+                    //     }
+                    // }
+                    // console.log('arr:', arr);
+                    // console.log('arr:', arr);
+                    if (flag === 0) {
+                        this.originalPointCloudData.push(arr);
+                    } else if (flag === 1) {
+                        this.generatePointCloudData.push(arr);
+                    } else if (flag === 2) {
+                        this.originalLabelData.push(arr);
+                    } else if (flag === 3) {
+                        this.generateLabelData.push(arr);
+                    }
+                    if (parseFloat(arr[3]) > this.maxLightValue) {
+                        this.maxLightValue = parseFloat(arr[3]);
+                    }
+                    if (parseFloat(arr[3]) < this.minLightValue) {
+                        this.minLightValue = parseFloat(arr[3]);
+                    }
+                });
+            } else if (data_type === '.bin') {
+                console.log('.bin数据-抱歉我还不知道咋处理');
+            }
+            if (!flag) {
+                console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            } else {
+                console.log('this.generatePointCloudData:', this.generatePointCloudData);
+            }
+        },
+
+        // 开始加载点云预览图像
+        get_preview() {
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>0>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+            console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            console.log('this.generatePointCloudData:', this.generatePointCloudData);
+            var myChart = echarts.init(document.getElementById('preview'));
+            console.log('this.originalPointCloudData:', this.originalPointCloudData);
+            console.log('this.generatePointCloudData:', this.generatePointCloudData);
+            this.option = {
+                title: {
+                    text: '点云生成预览'
+                },
+                tooltip: {
+                    show: true,
+                    showCcontant: true,
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        label: {
+                            backgroundColor: '#6a7985'
+                        }
+                    }
+                },
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}
+                    }
+                },
+                legend: {
+                    // 就是显示哪些东西
+                    type: 'plain',
+                    data: ['original_data', 'generate_data', 'original_label', 'generate_label'],
+                    top: '10%'
+                },
+                grid3D: {
+                    containLabel: true,
+                    viewControl: {
+                        // 使用正交投影。
+                        projection: 'orthographic'
+                    }
+                },
+                xAxis3D: {
+                    type: 'value',
+                    // boundaryGap: true,
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                yAxis3D: {
+                    type: 'value',
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                zAxis3D: {
+                    type: 'value',
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                // visualMap: {
+                //     // calculable: true,
+                //     max: 50,
+                //     min: -0,
+                //     range: [-200, 200],
+                //     // 维度的名字默认就是表头的属性名
+                //     // dimension: 'Life Expectancy',
+                //     inRange: {
+                //         symbolSize: 2,
+                //         color: [
+                //             '#313695',
+                //             '#4575b4',
+                //             '#74add1',
+                //             '#abd9e9',
+                //             '#e0f3f8',
+                //             '#ffffbf',
+                //             '#fee090',
+                //             '#fdae61',
+                //             '#f46d43',
+                //             '#d73027',
+                //             '#a50026'
+                //         ]
+                //         // color: ['#abd9e9', '#74add1', '#4575b4', '#313695', '#a50026']
+                //         // color: ['#abd9e9', '#74add1', '#4575b4']
+                //     }
+                // },
+                series: [
+                    {
+                        name: 'original_data',
+                        type: 'scatter3D',
+                        data: this.originalPointCloudData,
+                        symbolSize: 2,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        name: 'generate_data',
+                        type: 'scatter3D',
+                        data: this.generatePointCloudData,
+                        symbolSize: 2,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        name: 'original_label',
+                        type: 'scatter3D',
+                        data: this.originalLabelData,
+                        symbolSize: 10,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        name: 'generate_label',
+                        type: 'scatter3D',
+                        data: this.generateLabelData,
+                        symbolSize: 5,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    }
+                ]
+            };
+            myChart.setOption(this.option);
+
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>1>>>>>>>>>>>>>>>>>>>>>>>>>>');
+            var myChart_original = echarts.init(document.getElementById('preview_original'));
+            this.option_original = {
+                title: {
+                    text: '原始图'
+                },
+                tooltip: {
+                    show: true,
+                    showCcontant: true,
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        label: {
+                            backgroundColor: '#6a7985'
+                        }
+                    }
+                },
+                legend: {
+                    // 就是显示哪些东西
+                    type: 'plain',
+                    data: ['original_data', 'original_label'],
+                    top: '10%'
+                },
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}
+                    }
+                },
+                grid3D: {
+                    containLabel: true,
+                    viewControl: {
+                        // 使用正交投影。
+                        projection: 'orthographic'
+                    }
+                },
+                xAxis3D: {
+                    type: 'value',
+                    // boundaryGap: true,
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                yAxis3D: {
+                    type: 'value',
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                zAxis3D: {
+                    type: 'value',
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                // visualMap: {
+                //     calculable: true,
+                //     max: 50,
+                //     min: -0,
+                //     range: [-200, 200],
+                //     // 维度的名字默认就是表头的属性名
+                //     // dimension: 'Life Expectancy',
+                //     inRange: {
+                //         symbolSize: 2,
+                //         color: [
+                //             '#313695',
+                //             '#4575b4',
+                //             '#74add1',
+                //             '#abd9e9',
+                //             '#e0f3f8',
+                //             '#ffffbf',
+                //             '#fee090',
+                //             '#fdae61',
+                //             '#f46d43',
+                //             '#d73027',
+                //             '#a50026'
+                //         ]
+                //         // color: ['#abd9e9', '#74add1', '#4575b4', '#313695', '#a50026']
+                //         // color: ['#abd9e9', '#74add1', '#4575b4']
+                //     }
+                // },
+                series: [
+                    {
+                        name: 'original_data',
+                        type: 'scatter3D',
+                        data: this.originalPointCloudData,
+                        symbolSize: 2,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        name: 'original_label',
+                        type: 'scatter3D',
+                        data: this.originalLabelData,
+                        symbolSize: 10,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    }
+                ]
+            };
+            myChart_original.setOption(this.option_original);
+
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>2>>>>>>>>>>>>>>>>>>>>>>>>>');
+            var myChart_generate = echarts.init(document.getElementById('preview_generate'));
+            this.option_generate = {
+                title: {
+                    text: '生成图'
+                },
+                tooltip: {
+                    show: true,
+                    showCcontant: true,
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        label: {
+                            backgroundColor: '#6a7985'
+                        }
+                    }
+                },
+                legend: {
+                    // 就是显示哪些东西
+                    type: 'plain',
+                    data: ['generate_data', 'generate_label'],
+                    top: '10%'
+                },
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}
+                    }
+                },
+                grid3D: {
+                    containLabel: true,
+                    viewControl: {
+                        // 使用正交投影。
+                        projection: 'orthographic'
+                    }
+                },
+                xAxis3D: {
+                    type: 'value',
+                    // boundaryGap: true,
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                yAxis3D: {
+                    type: 'value',
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                zAxis3D: {
+                    type: 'value',
+                    max: this.maxAxisValue,
+                    min: this.minAxisValue
+                },
+                // visualMap: {
+                //     calculable: true,
+                //     max: 50,
+                //     min: -0,
+                //     range: [-200, 200],
+                //     // 维度的名字默认就是表头的属性名
+                //     // dimension: 'Life Expectancy',
+                //     inRange: {
+                //         symbolSize: 2,
+                //         color: [
+                //             '#313695',
+                //             '#4575b4',
+                //             '#74add1',
+                //             '#abd9e9',
+                //             '#e0f3f8',
+                //             '#ffffbf',
+                //             '#fee090',
+                //             '#fdae61',
+                //             '#f46d43',
+                //             '#d73027',
+                //             '#a50026'
+                //         ]
+                //         // color: ['#abd9e9', '#74add1', '#4575b4', '#313695', '#a50026']
+                //         // color: ['#abd9e9', '#74add1', '#4575b4']
+                //     }
+                // },
+                series: [
+                    {
+                        name: 'generate_data',
+                        type: 'scatter3D',
+                        data: this.generatePointCloudData,
+                        symbolSize: 2,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        name: 'generate_label',
+                        type: 'scatter3D',
+                        data: this.generateLabelData,
+                        symbolSize: 10,
+                        encode: {
+                            // 维度的名字默认就是表头的属性名
+                            tooltip: [0, 1, 2, 3, 4]
+                        }
+                    }
+                ]
+            };
+            myChart_generate.setOption(this.option_generate);
+        },
+
+        // 级联列表选择需展示的点云后获取其文本内容
+        async previewHandleChange() {
+            this.originalPointCloudData = [];
+            this.generatePointCloudData = [];
+            // console.log('this.preview_value:', this.preview_value);
+            // 解压文件获取点云;
+            var original_points_name = this.preview_value[0];
+            var generate_points_name = this.preview_value[1];
+            var original_pointscloud = null;
+            var generate_pointscloud = null;
+            if (this.fake_flag) {
+                this.make_format_data(original_points_name, this.fake_file_original, 0);
+                this.make_format_data(generate_points_name, this.fake_label_original, 2);
+                console.log('generate_points_name:', generate_points_name);
+                if (generate_points_name === '000008_1_0.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_1_0, 1);
+                    console.log('this.fake_label_generate_1_0:', this.fake_label_generate_1_0);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_1_0, 3);
+                } else if (generate_points_name === '000008_1_1.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_1_1, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_1_1, 3);
+                } else if (generate_points_name === '000008_1_2.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_1_2, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_1_2, 3);
+                } else if (generate_points_name === '000008_1_3.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_1_3, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_1_3, 3);
+                } else if (generate_points_name === '000008_1_4.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_1_4, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_1_4, 3);
+                } else if (generate_points_name === '000008_1_5.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_1_5, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_1_5, 3);
+                } else if (generate_points_name === '000001_3_0.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_0, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_0, 3);
+                } else if (generate_points_name === '000001_3_1.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_1, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_1, 3);
+                } else if (generate_points_name === '000001_3_2.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_2, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_2, 3);
+                } else if (generate_points_name === '000001_3_3.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_3, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_3, 3);
+                } else if (generate_points_name === '000001_3_4.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_4, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_4, 3);
+                } else if (generate_points_name === '000001_3_5.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_5, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_5, 3);
+                } else if (generate_points_name === '000001_3_6.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_6, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_6, 3);
+                } else if (generate_points_name === '000001_3_7.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_7, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_7, 3);
+                } else if (generate_points_name === '000001_3_8.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_8, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_8, 3);
+                } else if (generate_points_name === '000001_3_9.txt') {
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_9, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_9, 3);
+                } else if (generate_points_name === '000001_3_10.txt') {
+                    console.log('this.fake_file_generate_3_10:', this.fake_file_generate_3_10);
+                    console.log('this.fake_label_generate_3_10:', this.fake_label_generate_3_10);
+                    this.make_format_data(generate_points_name, this.fake_file_generate_3_10, 1);
+                    this.make_format_data(generate_points_name, this.fake_label_generate_3_10, 3);
+                }
+
+                this.get_preview();
+                return 0;
+            }
+            // console.log('original_points_name:', original_points_name);
+            // console.log('generate_points_name:', generate_points_name);
+            if (this.original_is_Zip) {
+                var original_files = new JSZip();
+
+                await original_files.loadAsync(this.original_files_zip).then(async function(file) {
+                    // console.log('file:', file);
+                    // 此处是压缩包中的testTXT.txt文件，以string形式返回其内容，此时已经可以获取zip中的所有文件了
+                    await original_files
+                        .file(original_points_name)
+                        .async('string')
+                        .then(function(content) {
+                            original_pointscloud = content;
+                            // console.log('original_pointscloud:', original_points_name);
+                            // console.log('content:', content);
+                            // console.log('获取原始点云数据：', original_pointscloud);
+                        });
+                });
+                this.make_format_data(original_points_name, original_pointscloud, 0);
+                var generate_files = new JSZip();
+                await generate_files.loadAsync(this.generate_files_zip).then(async function(generate_files_zip) {
+                    // 此处是压缩包中的testTXT.txt文件，以string形式返回其内容，此时已经可以获取zip中的所有文件了
+                    await generate_files
+                        .file(generate_points_name)
+                        .async('string')
+                        .then(function(content) {
+                            generate_pointscloud = content;
+                            // console.log('original_pointscloud:', generate_points_name);
+                            // console.log('content:', content);
+                            // console.log('获取生成点云数据：', generate_pointscloud);
+                        });
+                });
+                this.make_format_data(generate_points_name, generate_pointscloud, 1);
+            } else {
+                // origanl为非zip-直接读取
+                var reader = new FileReader(); // 这里是核心！！！读取操作就是由它完成的。
+                reader.readAsText(this.original_blob);
+                let me = this;
+                console.log('开始读取1');
+                reader.onload = async function() {
+                    // console.log('me.test_text:', me.test_text);
+                    console.log('开始读取2');
+                    var original_content = this.result;
+                    console.log('original_content:', original_content);
+                    console.log('me.preview_options[0].value:', me.preview_options[0].value);
+                    me.make_format_data(me.preview_options[0].value, original_content, 0);
+                    console.log('me.originalPointCloudData:', me.originalPointCloudData);
+                    // generate是zip
+                    if (me.generate_is_Zip) {
+                        var generate_files = new JSZip();
+                        await generate_files.loadAsync(me.generate_files_zip).then(async function(generate_files_zip) {
+                            // 此处是压缩包中的testTXT.txt文件，以string形式返回其内容，此时已经可以获取zip中的所有文件了
+                            await generate_files
+                                .file(generate_points_name)
+                                .async('string')
+                                .then(function(content) {
+                                    generate_pointscloud = content;
+                                    // console.log('original_pointscloud:', generate_points_name);
+                                    // console.log('content:', content);
+                                    // console.log('获取生成点云数据：', generate_pointscloud);
+                                });
+                        });
+                        me.make_format_data(generate_points_name, generate_pointscloud, 1);
+                        console.log('me.generatePointCloudData:', me.generatePointCloudData);
+                        me.get_preview();
+                    }
+                    // generateb不是zip
+                    else {
+                        var reader2 = new FileReader(); // 这里是核心！！！读取操作就是由它完成的。
+                        reader2.readAsText(this.generate_blob);
+                        console.log('开始读取1');
+                        reader2.onload = async function() {
+                            var generate_content = this.result;
+                            me.make_format_data(me.preview_options[0].children.value, generate_content, 1);
+                            console.log('me.generatePointCloudData:', me.generatePointCloudData);
+                        };
+                    }
+                };
+            }
+
+            this.get_preview();
+        },
+
+        // 关闭预览
+        handleClose(done) {
+            this.$confirm('确认关闭？')
+                .then(_ => {
+                    this.fake_flag = false;
+                    this.previewDialogVisible = false;
+                    this.fileName = '';
+                    this.preview_value = [];
+                    this.preview_options = [];
+                    this.previewDialogVisible = false;
+                    this.loading = true;
+                    this.original_files_zip = null;
+                    this.generate_files_zip = null;
+                    this.originalPointCloudData = [];
+                    this.generatePointCloudData = [];
+                    this.maxAxisValue = -10000;
+                    this.minAxisValue = 10000;
+                })
+                .catch(_ => {});
+        },
+
+        // 切换本用户和所有用户的tab响应
         handleClick(tab, event) {
             // console.log(tab, event);
             if (tab.index === '1') {
                 this.getTaskList_All();
             }
         },
+
         // 表中空白格填充
         isBlank_num(scope) {
             let key = scope.column.property,
@@ -916,6 +2592,7 @@ export default {
             }
             return value;
         },
+
         isBlank_start(scope) {
             let key = scope.column.property,
                 item = scope.row[key],
@@ -925,6 +2602,7 @@ export default {
             }
             return value;
         },
+
         isBlank_end(scope) {
             let key = scope.column.property,
                 item = scope.row[key],
@@ -934,13 +2612,16 @@ export default {
             }
             return value;
         },
+
         // 切换搜索类型时更新页号
         pageReflash_All() {
             this.queryInfo_All.page = 1;
         },
+
         pageReflash_Self() {
             this.queryInfo_Self.page = 1;
         },
+
         async MethodDetail(id) {
             this.methodDialogSelfVisible = true;
             const { data: data } = await this.$http.get('/task/' + '?task_id=' + id);
@@ -958,6 +2639,17 @@ export default {
 </script>
 
 <style scoped>
+.juzhog {
+    width: 600px;
+    height: 530px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -300px;
+    margin-top: -265px;
+    background-color: #fff;
+}
+
 .search {
     margin-bottom: 10px !important;
 }
@@ -973,6 +2665,34 @@ export default {
     font-size: 14px;
     color: #000;
     line-height: 25px;
+}
+.el-input__inner {
+    width: 600px !important;
+}
+
+.view1 {
+    width: 600px;
+    height: 530px;
+    margin: 0 10px 0 0;
+    background-color: #fff;
+    float: left;
+}
+
+.el-dialog {
+    display: flex;
+    flex-direction: column;
+    margin: 0 !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /*height:600px;*/
+    max-height: calc(100% - 30px);
+    max-width: calc(100% - 30px);
+}
+.el-dialog .el-dialog__body {
+    flex: 1;
+    overflow: auto;
 }
 /* .inlineBlock {
     display: inline-block;

@@ -476,6 +476,9 @@ export default {
         MethodsDialogClosed() {
             this.augMethodList = [];
         }
+    },
+    mounted() {
+        this.$store.commit('setUserId', sessionStorage.getItem('userId'));
     }
 };
 </script>

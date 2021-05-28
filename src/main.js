@@ -18,9 +18,9 @@ import axios from 'axios'
 import "./assets/icon/iconfont.css";
 
 // ise内网
-axios.defaults.baseURL = 'http://10.0.0.22:8001/api/';
+// axios.defaults.baseURL = 'http://10.0.0.22:8001/api/';
 // ise外网跳板
-// axios.defaults.baseURL = 'http://129.211.89.155:8001/api/';
+axios.defaults.baseURL = 'http://129.211.89.155:8001/api/';
 // 国外服务器
 // axios.defaults.baseURL = 'http://172.16.100.171/api/';
 Vue.prototype.$http = axios
@@ -34,13 +34,14 @@ Vue.config.productionTip = false;
 axios.interceptors.request.use(config => {
     //为请求头对象，添加token验证的Authorization字段
     config.headers.Authorization = store.state.token;
+    console.log('store.state.token发送:', store.state.token);
     // config.headers['Content-Security-Policy'] = upgrade-insecure-requests
     // console.log("headerToken:" + config.headers.Authorization);
     // config.headers.Authorization = window.sessionStorage.getItem('token');
     // config.headers.Authorization = window.sessionStorage.getItem('token')
     // 固定写法，必须return config
     return config;
-  })
+})
 // 在response拦截器中隐藏进度条
 axios.interceptors.response.use(config => {
     console.log('response_config:', config);
@@ -48,7 +49,7 @@ axios.interceptors.response.use(config => {
     // NProgress.done()
     // 固定写法，必须return config
     return config;
-  })
+})
 Vue.use(VueI18n);
 Vue.use(ElementUI, {
     size: 'small'
@@ -58,17 +59,17 @@ Vue.filter('dateFormat', function (originVal) {
     if (originVal) {
         // 化字符串
         var res = originVal + '';
-        res = res.split('.')[0].replace('T',' ');
+        res = res.split('.')[0].replace('T', ' ');
         return res
     }
-  })
+})
 
 const i18n = new VueI18n({
     locale: 'zh',
     messages
 });
 
-//使用钩子函数对路由进行权限跳转[路由守卫]
+// 使用钩子函数对路由进行权限跳转[路由守卫]
 router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} | LidarPlatform`;
     const role = store.state.token;

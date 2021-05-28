@@ -72,44 +72,51 @@ export default {
                         }
                     ]
                 },
-                {
-                    icon: 'el-icon-umplidardata',
-                    index: 'Radardata',
-                    title: '电磁波雷达数据',
-                    subs: [
-                        {
-                            index: 'Radar_Augmentation_Add',
-                            title: '添加生成任务'
-                        },
-                        {
-                            index: 'Radar_Augmentation_Task',
-                            title: '生成任务查询'
-                        },
-                        {
-                            index: 'Radar_Input_Data',
-                            title: '数据可视化'
-                        }
-                    ]
-                },
-                {
-                    icon: 'el-icon-picture-outline-round',
-                    index: 'Imagedata',
-                    title: '雷达图像数据',
-                    subs: [
-                        {
-                            index: 'Image_Augmentation_Add',
-                            title: '添加生成任务'
-                        },
-                        {
-                            index: 'Image_Augmentation_Task',
-                            title: '生成任务查询'
-                        },
-                        {
-                            index: 'Image_Input_Data',
-                            title: '数据可视化'
-                        }
-                    ]
-                },
+                // {
+                //     icon: 'el-icon-umplidardata',
+                //     index: 'Radardata',
+                //     title: '电磁波雷达数据',
+                //     subs: [
+                //         {
+                //             index: 'Radar_Augmentation_Add',
+                //             title: '添加生成任务'
+                //         },
+                //         {
+                //             index: 'Radar_Augmentation_Task',
+                //             title: '生成任务查询'
+                //         },
+                //         {
+                //             index: 'Radar_Input_Data',
+                //             title: '数据可视化'
+                //         }
+                //     ]
+                // },
+                // {
+                //     icon: 'el-icon-picture-outline-round',
+                //     index: 'Imagedata',
+                //     title: '雷达图像数据',
+                //     subs: [
+                //         {
+                //             index: 'Image_Augmentation_Add',
+                //             title: '添加生成任务'
+                //         },
+                //         {
+                //             index: 'Image_Augmentation_Task',
+                //             title: '生成任务查询'
+                //         },
+                //         {
+                //             index: 'Image_Input_Data',
+                //             title: '数据可视化'
+                //         }
+                //     ]
+                // },
+
+                // {
+                //     icon: 'el-icon-grape',
+                //     index: 'Agricultural_Augmentation_Task',
+                //     title: '农业图像数据'
+                // },
+
                 {
                     icon: 'el-icon-reading',
                     index: 'Log',
@@ -123,15 +130,15 @@ export default {
                         {
                             index: 'user_manage',
                             title: '用户管理'
-                        },
-                        {
-                            index: 'augmentation_manage',
-                            title: '生成管理'
-                        },
-                        {
-                            index: 'system_setting',
-                            title: '系统设置'
                         }
+                        // {
+                        //     index: 'augmentation_manage',
+                        //     title: '生成管理'
+                        // },
+                        // {
+                        //     index: 'system_setting',
+                        //     title: '系统设置'
+                        // }
                     ]
                 }
             ],

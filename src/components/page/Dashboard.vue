@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-row :gutter="20">
+        <el-row :gutter="20" style="margin-bottom: 0px">
             <el-col :span="18">
                 <el-row :gutter="20" class="mgb20">
                     <el-col :span="6">
@@ -50,7 +50,7 @@
                 </el-row>
                 <el-row :gutter="20">
                     <el-col :span="16">
-                        <el-card shadow="hover" style="height:403px;">
+                        <el-card shadow="hover" style="height:330px;">
                             <div slot="header" class="clearfix" style="font-size: 700">
                                 <span>快捷方式</span>
                             </div>
@@ -60,7 +60,7 @@
                                         <!-- <a href="#/input"> -->
                                         <a href="#/dashboard" style="margin-left: 0px !important;">
                                             <el-button type="info" icon="el-icon-s-home" plain :style="selfstyle"
-                                                ><br /><span style="margin-left: 0px !important; font-size: 14px">主页</span></el-button
+                                                ><br /><span style="margin-left: 0px !important; font-size: 14px">系统主页</span></el-button
                                             >
                                         </a>
                                     </div></el-col
@@ -72,7 +72,7 @@
                                                 type="info"
                                                 icon="el-icon-s-marketing"
                                                 plain
-                                                style="font-size: 35px; width: 100% ; height: 125px"
+                                                style="font-size: 35px; width: 100% ; height: 100px"
                                                 ><br /><span style="font-size: 14px">数据可视化</span></el-button
                                             >
                                         </a>
@@ -83,9 +83,9 @@
                                         <a href="#/Lidar_Augmentation_Add">
                                             <el-button
                                                 type="info"
-                                                icon="el-icon-data-analysis"
+                                                icon="el-icon-upload"
                                                 plain
-                                                style="font-size: 35px; width: 100% ; height: 125px"
+                                                style="font-size: 35px; width: 100% ; height: 100px"
                                                 ><br /><span style="font-size: 14px">添加数据生成</span></el-button
                                             >
                                         </a>
@@ -93,28 +93,28 @@
                                 >
                                 <el-col :span="6"
                                     ><div>
-                                        <a href="#/Log">
-                                            <el-button
-                                                type="info"
-                                                icon="el-icon-s-claim"
-                                                plain
-                                                style="font-size: 35px; width: 100% ; height: 125px"
-                                                ><br /><span style="font-size: 14px">日志管理</span></el-button
-                                            >
-                                        </a>
+                                        <el-button
+                                            type="info"
+                                            icon="el-icon-s-claim"
+                                            plain
+                                            style="font-size: 35px; width: 100%; height: 100px"
+                                            ><br /><span style="font-size: 14px">生成任务查询</span></el-button
+                                        >
                                     </div></el-col
                                 >
                             </el-row>
                             <el-row :gutter="20" style="margin-left: 10px; margin-right: 10px">
                                 <el-col :span="6"
                                     ><div>
-                                        <el-button
-                                            type="info"
-                                            icon="el-icon-s-data"
-                                            plain
-                                            style="font-size: 35px; width: 100%; height: 125px"
-                                            ><br /><span style="font-size: 14px">进度条</span></el-button
-                                        >
+                                        <a href="#/Log">
+                                            <el-button
+                                                type="info"
+                                                icon="el-icon-document"
+                                                plain
+                                                style="font-size: 35px; width: 100% ; height: 100px"
+                                                ><br /><span style="font-size: 14px">日志管理</span></el-button
+                                            >
+                                        </a>
                                     </div></el-col
                                 >
                                 <el-col :span="6"
@@ -124,7 +124,7 @@
                                                 type="info"
                                                 icon="el-icon-set-up"
                                                 plain
-                                                style="font-size: 35px; width: 100%; height: 125px"
+                                                style="font-size: 35px; width: 100%; height: 100px"
                                                 ><br /><span style="font-size: 14px">生成管理</span></el-button
                                             >
                                         </a>
@@ -137,7 +137,7 @@
                                                 type="info"
                                                 icon="el-icon-user"
                                                 plain
-                                                style="font-size: 35px; width: 100%; height: 125px"
+                                                style="font-size: 35px; width: 100%; height: 100px"
                                                 ><br /><span style="font-size: 14px">用户管理</span></el-button
                                             >
                                         </a>
@@ -150,7 +150,7 @@
                                                 type="info"
                                                 icon="el-icon-setting"
                                                 plain
-                                                style="font-size: 35px; width: 100%; height: 125px"
+                                                style="font-size: 35px; width: 100%; height: 100px"
                                                 ><br /><span style="font-size: 14px">系统设置</span></el-button
                                             >
                                         </a>
@@ -160,7 +160,7 @@
                         </el-card>
                     </el-col>
                     <el-col :span="8">
-                        <el-card shadow="hover" style="height:403px;">
+                        <el-card shadow="hover" style="height:330px;">
                             <div slot="header" class="clearfix .body3">
                                 <span>正在运行的各生成任务</span>
                                 <!-- <el-button style="float: right; padding: 3px 0" type="text">添加</el-button> -->
@@ -230,23 +230,76 @@
                     </div>
                 </el-card>
 
-                <el-card shadow="hover" style="height:142px; margin-bottom:20px;" body-style="el-card__body1">
+                <!-- <el-card shadow="hover" style="height:142px; margin-bottom:20px;" body-style="el-card__body1">
                     <div class="el-card__header1">
                         <span>数据生成报告</span>
                     </div>
                     转化率 <el-progress :percentage="ConversionRate"></el-progress>
                     合格率
                     <el-progress :percentage="PassRate"></el-progress>
-                </el-card>
+                </el-card> -->
 
-                <el-card shadow="hover" style="height:182px;" body-style="el-card__body1 el-card__body2">
+                <el-card shadow="hover" style="height:245px;" body-style="el-card__body1 el-card__body2">
                     <div class="el-card__header1">
                         <span>系统报告</span>
                     </div>
-                    CPU使用率 <el-progress :percentage="systemStatusData.CPUStatus" color="#42b983"></el-progress>
-                    GPU使用率
-                    <el-progress :percentage="systemStatusData.GPUStatus" color="#f1e05a"></el-progress>
-                    内存占用率 <el-progress :percentage="systemStatusData.memoryStatus"></el-progress>
+                    <div v-if="systemStatusData.GPUStatus < 0">
+                        <hr style="clear:both; background-color: #FFF; border: none; height: 10px;" />
+                        <div>
+                            <h4 style="float: left; margin:0px 40px 0px 20px">CPU使用率</h4>
+                            <h4 style="float: left; margin:0px 20px">内存占用率</h4>
+                            <!-- <h4>CPU使用率</h4> -->
+                        </div>
+                        <hr style="clear:both; background-color: #FFF; border: none; height: 10px;" />
+                        <!-- <el-progress type="dashboard" :percentage="0"></el-progress> -->
+
+                        <div>
+                            <!-- <h4 style="float: left">内存占用率</h4> -->
+                            <!-- <h4>内存占用率</h4> -->
+                            <el-progress
+                                type="dashboard"
+                                :percentage="systemStatusData.CPUStatus"
+                                color="#42b983"
+                                style="float: left; margin-right: 20px"
+                            ></el-progress>
+                            <el-progress style="float: left" type="dashboard" :percentage="systemStatusData.memoryStatus"></el-progress>
+                        </div>
+                    </div>
+
+                    <div v-else>
+                        <hr style="background-color: #FFF; border: none; height: 10px; " />
+                        <div>
+                            <h4 style="font-weight:normal">CPU使用率</h4>
+                            <!-- <h4 style="font-weight:normal">{{ systemStatusData.CPUStatus + '%' }}</h4> -->
+                            <hr style="background-color: #FFF; border: none; height: 5px;" />
+                            <el-progress
+                                :text-inside="true"
+                                :percentage="systemStatusData.CPUStatus"
+                                color="#42b983"
+                                :stroke-width="18"
+                            ></el-progress>
+                        </div>
+                        <hr style="clear:both; background-color: #FFF; border: none; height: 15px;" />
+
+                        <h4 style="font-weight:normal">GPU使用率</h4>
+                        <!-- <h4 style="font-weight:normal">{{ systemStatusData.GPUStatus + '%' }}</h4> -->
+                        <hr style="background-color: #FFF; border: none; height: 5px;" />
+                        <el-progress
+                            :text-inside="true"
+                            :percentage="systemStatusData.GPUStatus"
+                            color="#f1e05a"
+                            :stroke-width="18"
+                        ></el-progress>
+
+                        <hr style="clear:both; background-color: #FFF; border: none; height: 15px;" />
+
+                        <div>
+                            <h4 style="font-weight:normal">内存占用率</h4>
+                            <!-- <h4 style="font-weight:normal">{{ systemStatusData.memoryStatus + '%' }}</h4> -->
+                            <hr style="background-color: #FFF; border: none; height: 5px;" />
+                            <el-progress :text-inside="true" :percentage="systemStatusData.memoryStatus" :stroke-width="18"></el-progress>
+                        </div>
+                    </div>
                 </el-card>
             </el-col>
         </el-row>
@@ -254,11 +307,23 @@
         <el-row>
             <!-- 生成数据监控 -->
 
-            <el-col :span="24" style="padding-left: 25px;">
+            <el-col :span="24">
                 <el-card shadow="hover">
-                    <div v-if="activeName == 'first'" id="main1" style="width: 95%; height:300px; margin: 0 auto;"></div>
+                    <div class="block">
+                        <!-- <span class="demonstration">Click 指示器触发</span> -->
+                        <el-carousel trigger="click" height="400px">
+                            <el-carousel-item v-for="item in 3" :key="item">
+                                <!-- <h3 class="small">{{ item }}</h3> -->
+                                <div v-if="item == 1" id="main1" style="width: 95%; height:400px; margin: 0 auto;"></div>
+                                <div v-if="item == 2" id="main2" style="width: 95%; height:400px; margin: 0 auto;"></div>
+                                <div v-if="item == 3" id="main3" style="width: 95%; height:400px; margin: 0 auto;"></div>
+                            </el-carousel-item>
+                        </el-carousel>
+                    </div>
+
+                    <!-- <div v-if="activeName == 'first'" id="main1" style="width: 95%; height:300px; margin: 0 auto;"></div>
                     <div id="main2" style="width: 95%; height:300px; margin: 0 auto;"></div>
-                    <div id="main3" style="width: 95%; height:300px; margin: 0 auto;"></div>
+                    <div id="main3" style="width: 95%; height:300px; margin: 0 auto;"></div> -->
                     <!-- <div id="main" style="width: 95%;height:300px; margin: 0 auto;"></div> -->
                 </el-card>
             </el-col>
@@ -279,7 +344,7 @@ export default {
                 marginLeft: '0px !important',
                 fontSize: '35px',
                 width: '100%',
-                height: '125px'
+                height: '100px'
             },
             tableData: [
                 {
@@ -327,41 +392,20 @@ export default {
                     value: 1065
                 }
             ],
-            options2: {
-                type: 'line',
-                title: {
-                    text: '近几个月各类数据生成趋势图'
-                },
-                labels: ['6月', '7月', '8月', '9月', '10月'],
-                datasets: [
-                    {
-                        label: '激光雷达数据生成',
-                        data: [234, 278, 270, 190, 230]
-                    },
-                    {
-                        label: '电磁波雷达数据生成',
-                        data: [164, 178, 150, 135, 160]
-                    },
-                    {
-                        label: '紧急数据生成',
-                        data: [74, 118, 200, 235, 90]
-                    }
-                ]
-            },
             systemStatusData: {
                 // CPU使用率
-                CPUStatus: 0,
-                GPUStatus: 0,
+                CPUStatus: -1,
+                GPUStatus: 18,
                 // 内存占用率
-                memoryStatus: 0
+                memoryStatus: -1
             },
             // 生成任务显示的数据
             // 激光雷达数据生成
-            StructuredDataNum: -1,
+            StructuredDataNum: 17,
             // 电磁波雷达数据生成
-            TextDataNum: -1,
+            TextDataNum: 38,
             // 紧急数据生成
-            EmergencyDataNum: -1,
+            EmergencyDataNum: 21,
             // 在线用户数量
             OnlineUsersNum: 0,
             // 转化率
@@ -408,6 +452,7 @@ export default {
     },
     // 此时页面上元素已经渲染完毕
     mounted() {
+        this.$store.commit('setUserId', sessionStorage.getItem('userId'));
         console.log('mounted:');
         this.getPerformance();
         this.getOnlineUser();
@@ -493,7 +538,10 @@ export default {
                 x.num = this.RunningTask_num[i];
                 this.RunningTask_final.push(x);
             }
-            // console.log(this.RunningTask_final);
+            this.RunningTask_final[0].name = '添加扩增点云生成';
+            this.RunningTask_final[1].name = '点云物体旋转生成';
+            this.RunningTask_final[2].name = '极端场景点云生成';
+            console.log('this.RunningTask_final:', this.RunningTask_final);
         },
         getECharts() {
             console.log('刷新图表');
@@ -530,13 +578,16 @@ export default {
                 for (var method in this.logData[date]) {
                     if (flag) {
                         this.methods.push(method);
-                        console.log('numbers:', JSON.parse(JSON.stringify(this.logData[date][method]['ran_task_number'])));
+                        // console.log('numbers:', JSON.parse(JSON.stringify(this.logData[date][method]['ran_task_number'])));
                     }
                 }
                 flag = false;
             }
             console.log('dates:', this.dates);
             console.log('methods:', this.methods);
+            // this.methods[0] = '添加扩增点云生成';
+            // this.methods[1] = '点云物体旋转生成';
+            // this.methods[2] = '极端场景点云生成';
             for (var method in this.methods) {
                 var temp_ran = [];
                 var temp_finish = [];
@@ -564,7 +615,7 @@ export default {
             for (var i = 0; i < this.methods.length; i++) {
                 var getone = {};
                 getone.type = 'line';
-                getone.stack = '总量';
+                // getone.stack = '总量';
                 getone.areaStyle = {};
                 getone.name = this.methods[i];
                 getone.data = this.datas_ran[i];
@@ -573,17 +624,24 @@ export default {
                 console.log('getone:', getone);
                 console.log('this.tmep_series_ran:', this.tmep_series_ran);
             }
-            // console.log('this.tmep_series:', this.tmep_series);
+            this.$set(this.tmep_series_ran[0], 'name', '添加扩增点云生成');
+            this.$set(this.tmep_series_ran[1], 'name', '点云物体旋转生成');
+            this.$set(this.tmep_series_ran[2], 'name', '极端场景点云生成');
+            console.log('this.tmep_series_ran:', this.tmep_series_ran);
             // console.log('加载option');
             if (this.myChart != null && this.myChart != '' && this.myChart != undefined) {
                 this.myChart.dispose();
             }
             this.myChart = echarts.init(document.getElementById('main1'));
+
+            // 指定图表的配置项和数据
             var option = {
+                //设置标题
                 title: {
                     text: '运行任务数监控',
                     left: 'center'
                 },
+                //设置提示
                 tooltip: {
                     trigger: 'axis',
                     axisPointer: {
@@ -593,10 +651,11 @@ export default {
                         }
                     }
                 },
+                //设置图例
                 legend: {
-                    // data: ['1型数据生成', '2型数据生成', '3型数据生成', '4型数据生成', '5型数据生成'],
+                    // 就是显示哪些东西
                     data: this.methods,
-                    top: '8%'
+                    top: '10%'
                 },
                 toolbox: {
                     feature: {
@@ -609,6 +668,7 @@ export default {
                     bottom: '3%',
                     containLabel: true
                 },
+                //设置X坐标轴
                 xAxis: [
                     {
                         type: 'category',
@@ -617,50 +677,14 @@ export default {
                         // data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
                     }
                 ],
+                //设置Y坐标轴
                 yAxis: [
                     {
                         type: 'value'
                     }
                 ],
+                // 设置数据
                 series: this.tmep_series_ran
-                // series: [
-                //     {
-                //         name: '1型数据生成',
-                //         type: 'line',
-                //         stack: '总量',
-                //         areaStyle: {},
-                //         data: [120, 132, 101, 134, 90, 230, 210]
-                //     },
-                //     {
-                //         name: '2型数据生成',
-                //         type: 'line',
-                //         stack: '总量',
-                //         areaStyle: {},
-                //         data: [220, 182, 191, 234, 290, 330, 310]
-                //     },
-                //     {
-                //         name: '3型数据生成',
-                //         type: 'line',
-                //         stack: '总量',
-                //         areaStyle: {},
-                //         data: [150, 232, 201, 154, 190, 330, 410]
-                //     },
-                //     {
-                //         name: '4型数据生成',
-                //         type: 'line',
-                //         stack: '总量',
-                //         areaStyle: {},
-                //         data: [320, 332, 301, 334, 390, 330, 320]
-                //     },
-                //     {
-                //         name: '5型数据生成',
-                //         type: 'line',
-                //         stack: '总量',
-                //         label: {},
-                //         areaStyle: {},
-                //         data: [820, 932, 901, 934, 1290, 1330, 1320]
-                //     }
-                // ]
             };
 
             // 使用刚指定的配置项和数据显示图表。
@@ -673,7 +697,7 @@ export default {
             for (var i = 0; i < this.methods.length; i++) {
                 var getone = {};
                 getone.type = 'line';
-                getone.stack = '总量';
+                // getone.stack = '总量';
                 getone.areaStyle = {};
                 getone.name = this.methods[i];
                 getone.data = this.datas_finish[i];
@@ -684,6 +708,9 @@ export default {
             }
             // console.log('this.tmep_series:', this.tmep_series);
             // console.log('加载option');
+            this.$set(this.tmep_series_finish[0], 'name', '添加扩增点云生成');
+            this.$set(this.tmep_series_finish[1], 'name', '点云物体旋转生成');
+            this.$set(this.tmep_series_finish[2], 'name', '极端场景点云生成');
             if (this.myChart2 != null && this.myChart2 != '' && this.myChart2 != undefined) {
                 this.myChart2.dispose();
             }
@@ -743,7 +770,7 @@ export default {
             for (var i = 0; i < this.methods.length; i++) {
                 var getone = {};
                 getone.type = 'line';
-                getone.stack = '总量';
+                // getone.stack = '总量';
                 getone.areaStyle = {};
                 getone.name = this.methods[i];
                 getone.data = this.datas_generate[i];
@@ -752,6 +779,9 @@ export default {
                 console.log('getone:', getone);
                 console.log('this.tmep_series_generate:', this.tmep_series_generate);
             }
+            this.$set(this.tmep_series_generate[0], 'name', '添加扩增点云生成');
+            this.$set(this.tmep_series_generate[1], 'name', '点云物体旋转生成');
+            this.$set(this.tmep_series_generate[2], 'name', '极端场景点云生成');
             // console.log('this.tmep_series:', this.tmep_series);
             // console.log('加载option');
             if (this.myChart3 != null && this.myChart3 != '' && this.myChart3 != undefined) {
@@ -825,7 +855,7 @@ export default {
 .grid-content {
     display: flex;
     align-items: center;
-    height: 100px;
+    height: 70px;
 }
 
 .grid-cont-right {
@@ -961,4 +991,21 @@ export default {
 .el-button [class*='el-icon-'] + span {
     margin-left: 0 !important;
 }
+
+.el-carousel__item h3 {
+    color: #475669;
+    font-size: 14px;
+    opacity: 0.75;
+    line-height: 150px;
+    margin: 0;
+}
+
+/* 走马灯的背景颜色 */
+/* .el-carousel__item:nth-child(2n) {
+    background-color: #99a9bf;
+}
+
+.el-carousel__item:nth-child(2n + 1) {
+    background-color: #d3dce6;
+} */
 </style>

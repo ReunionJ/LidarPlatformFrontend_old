@@ -143,7 +143,9 @@ export default {
         }
     },
     // 此时页面上元素已经渲染完毕
-    mounted() {}
+    mounted() {
+        this.$store.commit('setUserId', sessionStorage.getItem('userId'));
+    }
 };
 </script>
 
